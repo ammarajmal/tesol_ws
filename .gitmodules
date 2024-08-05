@@ -1,1 +1,12 @@
 
+[submodule "src/fiducials"]
+	path = src/fiducials
+	url = https://github.com/ammarajmal/fiducials
+	branch = noetic-devel
+[submodule "src/vision_msgs"]
+	path = src/vision_msgs
+	url = https://github.com/ammarajmal/vision_msgs.git
+	branch = noetic-devel
+[submodule "src/camera_info_manager_py"]
+	path = src/camera_info_manager_py
+	url = https://github.com/ammarajmal/camera_info_manager_py.git
