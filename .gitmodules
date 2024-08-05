@@ -1,0 +1,4 @@
+[submodule "src/fiducials"]
+	path = src/fiducials
+	url = https://github.com/UbiquityRobotics/fiducials.git
+	branch = noetic-devel
