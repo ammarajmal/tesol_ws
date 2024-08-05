@@ -1,0 +1,14 @@
+image_pipeline/stereo_image_proc
+/home/tesol/tesol/devel/.private/stereo_image_proc/cmake.lock /home/tesol/tesol/devel/./cmake.lock
+/home/tesol/tesol/devel/.private/stereo_image_proc/share/stereo_image_proc/cmake/stereo_image_procConfig-version.cmake /home/tesol/tesol/devel/share/stereo_image_proc/cmake/stereo_image_procConfig-version.cmake
+/home/tesol/tesol/devel/.private/stereo_image_proc/share/stereo_image_proc/cmake/stereo_image_procConfig.cmake /home/tesol/tesol/devel/share/stereo_image_proc/cmake/stereo_image_procConfig.cmake
+/home/tesol/tesol/devel/.private/stereo_image_proc/share/stereo_image_proc/docs/DisparityConfig.dox /home/tesol/tesol/devel/share/stereo_image_proc/docs/DisparityConfig.dox
+/home/tesol/tesol/devel/.private/stereo_image_proc/share/stereo_image_proc/docs/DisparityConfig-usage.dox /home/tesol/tesol/devel/share/stereo_image_proc/docs/DisparityConfig-usage.dox
+/home/tesol/tesol/devel/.private/stereo_image_proc/share/stereo_image_proc/docs/DisparityConfig.wikidoc /home/tesol/tesol/devel/share/stereo_image_proc/docs/DisparityConfig.wikidoc
+/home/tesol/tesol/devel/.private/stereo_image_proc/include/stereo_image_proc/DisparityConfig.h /home/tesol/tesol/devel/include/stereo_image_proc/DisparityConfig.h
+/home/tesol/tesol/devel/.private/stereo_image_proc/lib/libstereo_image_proc.so /home/tesol/tesol/devel/lib/libstereo_image_proc.so
+/home/tesol/tesol/devel/.private/stereo_image_proc/lib/pkgconfig/stereo_image_proc.pc /home/tesol/tesol/devel/lib/pkgconfig/stereo_image_proc.pc
+/home/tesol/tesol/devel/.private/stereo_image_proc/lib/python3/dist-packages/stereo_image_proc/__init__.py /home/tesol/tesol/devel/lib/python3/dist-packages/stereo_image_proc/__init__.py
+/home/tesol/tesol/devel/.private/stereo_image_proc/lib/python3/dist-packages/stereo_image_proc/cfg/__init__.py /home/tesol/tesol/devel/lib/python3/dist-packages/stereo_image_proc/cfg/__init__.py
+/home/tesol/tesol/devel/.private/stereo_image_proc/lib/python3/dist-packages/stereo_image_proc/cfg/DisparityConfig.py /home/tesol/tesol/devel/lib/python3/dist-packages/stereo_image_proc/cfg/DisparityConfig.py
+/home/tesol/tesol/devel/.private/stereo_image_proc/lib/stereo_image_proc/stereo_image_proc /home/tesol/tesol/devel/lib/stereo_image_proc/stereo_image_proc
