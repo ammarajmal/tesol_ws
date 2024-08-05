@@ -1,0 +1,14 @@
+<launch>
+    <arg name="camera_name" default="sony_cam1" />
+    <arg name="cb_size" default="5x6" />
+    <arg name="cb_square" default="0.025" />
+
+    <node name="camera_calibration"
+          pkg="camera_calibration"
+          type="cameracalibrator.py"
+          args="--size $(arg cb_size) --square $(arg cb_square)"
+          output="screen">
+        <remap from="image" to="$(arg camera_name)/image_raw"/>
+        <remap from="camera" to="$(arg camera_name)"/>
+    </node>
+</launch>

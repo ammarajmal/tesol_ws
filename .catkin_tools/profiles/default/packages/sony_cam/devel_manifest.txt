@@ -1,0 +1,6 @@
+sony_cam
+/home/tesol/tesol/devel/.private/sony_cam/cmake.lock /home/tesol/tesol/devel/./cmake.lock
+/home/tesol/tesol/devel/.private/sony_cam/share/sony_cam/cmake/sony_camConfig-version.cmake /home/tesol/tesol/devel/share/sony_cam/cmake/sony_camConfig-version.cmake
+/home/tesol/tesol/devel/.private/sony_cam/share/sony_cam/cmake/sony_camConfig.cmake /home/tesol/tesol/devel/share/sony_cam/cmake/sony_camConfig.cmake
+/home/tesol/tesol/devel/.private/sony_cam/lib/sony_cam/sony_cam_node /home/tesol/tesol/devel/lib/sony_cam/sony_cam_node
+/home/tesol/tesol/devel/.private/sony_cam/lib/pkgconfig/sony_cam.pc /home/tesol/tesol/devel/lib/pkgconfig/sony_cam.pc

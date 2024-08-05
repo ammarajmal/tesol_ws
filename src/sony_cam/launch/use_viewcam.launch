@@ -1,0 +1,35 @@
+<launch>
+
+    <arg name="launch_nuc" default="sony_cam1" />
+
+    <group if = "$(eval launch_nuc == 'sony_cam1')">
+        <include file="$(find sony_cam)/launch/viewcam.launch">
+            <arg name="camera_name" value="$(arg launch_nuc)" />
+        </include>
+    </group>
+
+    <group if = "$(eval launch_nuc == 'sony_cam2')">
+        <include file="$(find sony_cam)/launch/viewcam.launch">
+            <arg name="camera_name" value="$(arg launch_nuc)" />
+        </include>
+    </group>
+
+    <group if = "$(eval launch_nuc == 'sony_cam3')">
+        <include file="$(find sony_cam)/launch/viewcam.launch">
+            <arg name="camera_name" value="$(arg launch_nuc)" />
+        </include>
+    </group>
+
+        <group if = "$(eval launch_nuc == 'sony_cam4')">
+        <include file="$(find sony_cam)/launch/viewcam.launch">
+            <arg name="camera_name" value="$(arg launch_nuc)" />
+        </include>
+    </group>
+
+        <group if = "$(eval launch_nuc == 'sony_cam5')">
+        <include file="$(find sony_cam)/launch/viewcam.launch">
+            <arg name="camera_name" value="$(arg launch_nuc)" />
+        </include>
+    </group>
+</launch>
+
