@@ -1,0 +1,6 @@
+devel_space: /home/tesol/tesol/devel
+install: false
+install_space: /home/tesol/tesol/install
+profile: default
+source_space: /home/tesol/tesol/src
+workspace: /home/tesol/tesol
