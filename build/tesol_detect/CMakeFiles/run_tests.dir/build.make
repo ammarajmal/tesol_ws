@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/tesol/tesol/src/tesol_detect
+CMAKE_SOURCE_DIR = /home/tesol/tesol_ws/src/tesol_detect
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/tesol/tesol/build/tesol_detect
+CMAKE_BINARY_DIR = /home/tesol/tesol_ws/build/tesol_detect
 
 # Utility rule file for run_tests.
 
@@ -67,6 +67,6 @@ CMakeFiles/run_tests.dir/clean:
 .PHONY : CMakeFiles/run_tests.dir/clean
 
 CMakeFiles/run_tests.dir/depend:
-	cd /home/tesol/tesol/build/tesol_detect && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/tesol/tesol/src/tesol_detect /home/tesol/tesol/src/tesol_detect /home/tesol/tesol/build/tesol_detect /home/tesol/tesol/build/tesol_detect /home/tesol/tesol/build/tesol_detect/CMakeFiles/run_tests.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/tesol/tesol_ws/build/tesol_detect && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/tesol/tesol_ws/src/tesol_detect /home/tesol/tesol_ws/src/tesol_detect /home/tesol/tesol_ws/build/tesol_detect /home/tesol/tesol_ws/build/tesol_detect /home/tesol/tesol_ws/build/tesol_detect/CMakeFiles/run_tests.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/run_tests.dir/depend
 

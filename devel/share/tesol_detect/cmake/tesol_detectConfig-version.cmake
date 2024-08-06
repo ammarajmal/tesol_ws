@@ -1,1 +1,1 @@
-/home/tesol/tesol/devel/.private/tesol_detect/share/tesol_detect/cmake/tesol_detectConfig-version.cmake
+/home/tesol/tesol_ws/devel/.private/tesol_detect/share/tesol_detect/cmake/tesol_detectConfig-version.cmake

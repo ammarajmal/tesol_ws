@@ -1,1 +1,1 @@
-/home/tesol/tesol/devel/.private/catkin_tools_prebuild/setup.bash
+/home/tesol/tesol_ws/devel/.private/catkin_tools_prebuild/setup.bash
