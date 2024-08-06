@@ -9,7 +9,7 @@
 
     <node name="$(arg camera_name)"
         pkg="sony_cam"
-        type="sony_cam"
+        type="sony_cam_node"
         output="screen">
     <param name="frame_rate" value="$(arg camera_fps)"/>
     <param name="camera_name" value="$(arg camera_name)"/>
