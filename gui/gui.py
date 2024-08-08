@@ -384,7 +384,7 @@ class NodeGUI(ctk.CTk):
         self.cam_first = cam_num
         self.record_data_param_update()
         print(f'File Name: {self.file_name}')
-        self.sub1 = rospy.Subscriber(f'/sony_cam{cam_num}_detect/fiducial_transforms', FiducialTransformArray, self.record_single)
+        self.sub1 = rospy.Subscriber(f'/sony_cam{cam_num}/aruco_detect_node/fiducial_transforms', FiducialTransformArray, self.record_single)
         self.is_data_collection_active = True
         rospy.Timer(rospy.Duration(self.experiment_dur), self.stop_data_collection, oneshot=True)
         self.collectected_data = []
@@ -429,8 +429,8 @@ class NodeGUI(ctk.CTk):
         if num == 2:
             first_cam = cams[0]
             second_cam = cams[1]
-            self.sub1 = message_filters.Subscriber(f'/sony_cam{first_cam}_detect/fiducial_transforms', FiducialTransformArray)
-            self.sub2 = message_filters.Subscriber(f'/sony_cam{second_cam}_detect/fiducial_transforms', FiducialTransformArray)
+            self.sub1 = message_filters.Subscriber(f'/sony_cam{first_cam}/aruco_detect_node/fiducial_transforms', FiducialTransformArray)
+            self.sub2 = message_filters.Subscriber(f'/sony_cam{second_cam}/aruco_detect_node/fiducial_transforms', FiducialTransformArray)
             self.ats = message_filters.ApproximateTimeSynchronizer([self.sub1, self.sub2], 10, 0.1, allow_headerless=True)
             self.ats.registerCallback(self.record_two_cams)
             self.is_data_collection_active = True
@@ -438,9 +438,9 @@ class NodeGUI(ctk.CTk):
             self.collectected_data = []
         if num == 3:
             print('Recording Pose Data for 3 Cameras')
-            self.sub1 = message_filters.Subscriber(f'/sony_cam{cams[0]}_detect/fiducial_transforms', FiducialTransformArray)
-            self.sub2 = message_filters.Subscriber(f'/sony_cam{cams[1]}_detect/fiducial_transforms', FiducialTransformArray)
-            self.sub3 = message_filters.Subscriber(f'/sony_cam{cams[2]}_detect/fiducial_transforms', FiducialTransformArray)
+            self.sub1 = message_filters.Subscriber(f'/sony_cam{cams[0]}/aruco_detect_node/fiducial_transforms', FiducialTransformArray)
+            self.sub2 = message_filters.Subscriber(f'/sony_cam{cams[1]}/aruco_detect_node/fiducial_transforms', FiducialTransformArray)
+            self.sub3 = message_filters.Subscriber(f'/sony_cam{cams[2]}/aruco_detect_node/fiducial_transforms', FiducialTransformArray)
             self.ats = message_filters.ApproximateTimeSynchronizer([self.sub1, self.sub2, self.sub3], 10, 0.1, allow_headerless=True)
             self.ats.registerCallback(self.record_multiple)
             self.is_data_collection_active = True
