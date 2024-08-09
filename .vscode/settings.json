@@ -63,5 +63,12 @@
   "C_Cpp_Runner.useLeakSanitizer": false,
   "C_Cpp_Runner.showCompilationTime": false,
   "C_Cpp_Runner.useLinkTimeOptimization": false,
-  "C_Cpp_Runner.msvcSecureNoWarnings": false
+  "C_Cpp_Runner.msvcSecureNoWarnings": false,
+  "files.associations": {
+    "aruco_detect_cam_cpp": "c",
+    "*.tcc": "c",
+    "string": "c",
+    "unordered_map": "c",
+    "string_view": "c"
+  }
 }

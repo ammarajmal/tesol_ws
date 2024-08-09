@@ -1,7 +1,7 @@
 <launch>
     <arg name="camera_name" default="sony_cam1" />
-    <arg name="cb_size" default="5x6" />
-    <arg name="cb_square" default="0.025" />
+    <arg name="cb_size" default="8x10" />
+    <arg name="cb_square" default="0.00633" />
 
     <node name="camera_calibration"
           pkg="camera_calibration"
