@@ -364,9 +364,14 @@ class NodeGUI(ctk.CTk):
             cur_time = rospy.get_time()
             cur_time = datetime.datetime.fromtimestamp(cur_time).strftime('%Y-%m-%d_%H-%M-%S')
             cwd = os.getcwd()
-            cwd = os.path.join(cwd, 'data/pose_data/')
+            data_dir = os.path.join(cwd, 'data/pose_data/')
+            
+            # Check if directory exists, if not, create it
+            if not os.path.exists(data_dir):
+                os.makedirs(data_dir)
+            
             self.file_name = f'data_{self.experiment_name}_{self.experiment_dur}s_{cur_time}.csv'
-            self.file_name = os.path.join(cwd, self.file_name)
+            self.file_name = os.path.join(data_dir, self.file_name)
     def check_running_cameras(self):
         # check which of the self.cam1_status, self.cam2_status, self.cam3_status are True and return the camera numbers
         cam_nums = []
