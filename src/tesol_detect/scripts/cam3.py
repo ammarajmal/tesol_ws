@@ -9,6 +9,7 @@ import cv2.aruco as aruco
 from cv2.aruco import detectMarkers, estimatePoseSingleMarkers
 from fiducial_msgs.msg import FiducialTransform, FiducialTransformArray
 from scipy.spatial.transform import Rotation as R
+from filterpy.kalman import KalmanFilter
 
 
 class MyDetector:
@@ -36,6 +37,16 @@ class MyDetector:
         self.parameters = aruco.DetectorParameters_create()
         self.camera_matrix = None
         self.dist_coeffs = None
+        
+        # Initialize the Kalman Filter for pose stabilization
+        self.kf = KalmanFilter(dim_x=6, dim_z=3)
+        self.kf.F = np.eye(6)                                   # State transition matrix
+        self.kf.H = np.hstack([np.eye(3), np.zeros((3, 3))])    # Measurement function
+        self.kf.P *= 1000.                                      # Initial uncertainty
+        self.kf.R = np.eye(3) * 0.01                            # Measurement noise
+        self.kf.Q = np.eye(6) * 0.1                             # Process noise
+        
+        
 
         rospy.loginfo("Aruco detector node is now running")
         rospy.spin()
@@ -87,12 +98,21 @@ class MyDetector:
             fiducial_array_msg.header.stamp = rospy.Time.now()
             fiducial_array_msg.header.frame_id = self.camera_name
 
-            # Estimate pose using cv2.estimatePoseSingleMarkers
+            # Estimate pose using estimatePoseSingleMarkers
             rvecs, tvecs, _ = estimatePoseSingleMarkers(
                 corners, self.aruco_marker_size, self.camera_matrix, self.dist_coeffs
             )
 
             for i in range(len(ids)):
+                # Apply the Kalman Filter
+                measured_tvec = tvecs[i].flatten()
+                self.kf.predict()
+                self.kf.update(measured_tvec)
+                # estimated_tvec = self.kf.x[:3]
+                tvecs[i] = self.kf.x[:3].reshape(1, 3)  # Update the translation vector
+                # self.kf.update(measured_rvec)           # Update the rotation vector
+                # rvecs[i] = self.kf.x[3:].reshape(1, 3)  # Update the rotation vector
+                
                 aruco.drawAxis(image, self.camera_matrix, self.dist_coeffs, rvecs[i], tvecs[i], 0.1)
                 transform = FiducialTransform()
                 transform.fiducial_id = int(ids[i])
