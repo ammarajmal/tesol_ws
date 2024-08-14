@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import rospy
 from sensor_msgs.msg import Image, CameraInfo
 from cv_bridge import CvBridge, CvBridgeError
@@ -9,7 +8,6 @@ import cv2.aruco as aruco
 from fiducial_msgs.msg import FiducialTransform, FiducialTransformArray
 from scipy.spatial.transform import Rotation as R
 from filterpy.kalman import KalmanFilter
-
 
 class MyDetector:
     def __init__(self):
@@ -52,6 +50,8 @@ class MyDetector:
         self.kf_q.P *= 1000.  # Initial uncertainty for quaternion
         self.kf_q.R = np.eye(4) * 0.01  # Measurement noise for quaternion
         self.kf_q.Q = np.eye(7) * 0.1  # Process noise for quaternion
+        
+        self.initial_rotation_mat = None  # To store the initial rotation matrix
 
         rospy.loginfo("Aruco detector node is now running")
         rospy.spin()
@@ -99,10 +99,10 @@ class MyDetector:
             cv2.waitKey(1)
 
     def publish_fiducial_transforms(self, ids, corners, image):
-        """ Helper function to publish fiducial transforms """
+        """ Helper function to publish fiducial transforms in the marker frame """
         fiducial_array_msg = FiducialTransformArray()
         fiducial_array_msg.header.stamp = rospy.Time.now()
-        fiducial_array_msg.header.frame_id = self.camera_name
+        fiducial_array_msg.header.frame_id = f'Marker_{int(ids[0])}'
 
         # Estimate pose using estimatePoseSingleMarkers
         rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
@@ -110,14 +110,23 @@ class MyDetector:
         )
 
         for i in range(len(ids)):
+            # Convert rvec to rotation matrix
+            rotation_mat, _ = cv2.Rodrigues(rvecs[i])
+
+            if self.initial_rotation_mat is None:
+                # Store the initial rotation matrix
+                self.initial_rotation_mat = rotation_mat
+            
+            # Use the initial rotation matrix for inversion
+            inv_rotation_mat = np.linalg.inv(self.initial_rotation_mat)
+            inv_tvec = -inv_rotation_mat.dot(tvecs[i].flatten())
+
             # Apply the Kalman Filter for Translation
-            measured_tvec = tvecs[i].flatten()
             self.kf_t.predict()
-            self.kf_t.update(measured_tvec)
-            tvecs[i] = self.kf_t.x[:3].reshape(1, 3)  # Update the translation vector
+            self.kf_t.update(inv_tvec)
+            inv_tvec = self.kf_t.x[:3].reshape(1, 3)  # Update the translation vector
 
             # Convert rvec to quaternion for filtering
-            rotation_mat, _ = cv2.Rodrigues(rvecs[i])
             measured_quat = R.from_matrix(rotation_mat).as_quat()  # Quaternion [x, y, z, w]
 
             # Apply the Kalman Filter for Quaternion
@@ -125,21 +134,28 @@ class MyDetector:
             self.kf_q.update(measured_quat.flatten())  # Flatten the quaternion to ensure it is a 1D array
             estimated_quat = self.kf_q.x[:4].flatten()  # Updated quaternion
 
-            # Convert quaternion back to rotation vector
-            estimated_rotation = R.from_quat(estimated_quat).as_rotvec().reshape(1, 3)
-            rvecs[i] = estimated_rotation
+            # Convert inverted rotation matrix to quaternion
+            inv_quat = R.from_quat(estimated_quat).as_quat()
 
-            # Draw and publish the pose
-            aruco.drawAxis(image, self.camera_matrix, self.dist_coeffs, rvecs[i], tvecs[i], 0.1)
+            # Debugging outputs
+            print("Initial Rotation Matrix:", self.initial_rotation_mat)
+            print("Inverted Rotation Matrix:", inv_rotation_mat)
+            print("Inverted Translation Vector:", inv_tvec)
+
+            # Increase axis length for better visibility
+            axis_length = 0.2
+
+            # Draw and publish the pose using the initial rotation matrix for inversion
+            aruco.drawAxis(image, self.camera_matrix, self.dist_coeffs, inv_rotation_mat, inv_tvec.flatten(), axis_length)
             transform = FiducialTransform()
             transform.fiducial_id = int(ids[i])
-            transform.transform.translation.x = tvecs[i][0][0]
-            transform.transform.translation.y = tvecs[i][0][1]
-            transform.transform.translation.z = tvecs[i][0][2]
-            transform.transform.rotation.x = estimated_quat[0]
-            transform.transform.rotation.y = estimated_quat[1]
-            transform.transform.rotation.z = estimated_quat[2]
-            transform.transform.rotation.w = estimated_quat[3]
+            transform.transform.translation.x = inv_tvec[0][0]
+            transform.transform.translation.y = inv_tvec[0][1]
+            transform.transform.translation.z = inv_tvec[0][2]
+            transform.transform.rotation.x = inv_quat[0]
+            transform.transform.rotation.y = inv_quat[1]
+            transform.transform.rotation.z = inv_quat[2]
+            transform.transform.rotation.w = inv_quat[3]
             fiducial_array_msg.transforms.append(transform)
         
         self.pose_fid_pub.publish(fiducial_array_msg)

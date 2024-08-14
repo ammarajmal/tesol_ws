@@ -447,7 +447,7 @@ class NodeGUI(ctk.CTk):
             self.sub2 = message_filters.Subscriber(f'/sony_cam{cams[1]}/aruco_detect_node/fiducial_transforms', FiducialTransformArray)
             self.sub3 = message_filters.Subscriber(f'/sony_cam{cams[2]}/aruco_detect_node/fiducial_transforms', FiducialTransformArray)
             self.ats = message_filters.ApproximateTimeSynchronizer([self.sub1, self.sub2, self.sub3], 10, 0.1, allow_headerless=True)
-            self.ats.registerCallback(self.record_multiple)
+            self.ats.registerCallback(self.record_three_cams)
             self.is_data_collection_active = True
             rospy.Timer(rospy.Duration(self.experiment_dur), self.stop_data_collection3, oneshot=True)
             self.collectected_data = []
@@ -455,7 +455,14 @@ class NodeGUI(ctk.CTk):
         if not self.is_data_collection_active:
             return
         timestamp = rospy.get_time()
-        self.collectected_data.append([timestamp, msg1, msg2])
+        # Handle missing messages
+        if msg1.transforms and msg2.transforms:
+            self.collectected_data.append([timestamp, msg1, msg2])
+        elif msg1.transforms:
+            self.collectected_data.append([timestamp, msg1, None])
+        elif msg2.transforms:
+            self.collectected_data.append([timestamp, None, msg2])
+
     def stop_data_collection2(self, event):
         self.is_data_collection_active = False
         self.sub1.unregister()
@@ -477,11 +484,27 @@ class NodeGUI(ctk.CTk):
                     writer.writerow(row)
         print(f'Data saved to {self.file_name}')
     
-    def record_multiple(self, msg1, msg2, msg3):
+    def record_three_cams(self, msg1, msg2, msg3):
         if not self.is_data_collection_active:
             return
         timestamp = rospy.get_time()
-        self.collectected_data.append([timestamp, msg1, msg2, msg3])
+        if msg1.transforms and msg2.transforms and msg3.transforms:
+            self.collectected_data.append([timestamp, msg1, msg2, msg3])
+        elif msg1.transforms and msg2.transforms:
+            self.collectected_data.append([timestamp, msg1, msg2, None])
+        elif msg1.transforms and msg3.transforms:
+            self.collectected_data.append([timestamp, msg1, None, msg3])
+        elif msg2.transforms and msg3.transforms:
+            self.collectected_data.append([timestamp, None, msg2, msg3])
+        elif msg1.transforms:
+            self.collectected_data.append([timestamp, msg1, None, None])
+        elif msg2.transforms:
+            self.collectected_data.append([timestamp, None, msg2, None])
+        elif msg3.transforms:
+            self.collectected_data.append([timestamp, None, None, msg3])
+        else:
+            return
+        
     def stop_data_collection3(self, event):
         self.is_data_collection_active = False
         self.sub1.unregister()
@@ -530,6 +553,9 @@ class NodeGUI(ctk.CTk):
         data = pd.read_csv(self.file_name)
 
         def adjust_positions(data, cam_prefix):
+            if f'{cam_prefix} Position X' not in data.columns or data[f'{cam_prefix} Position X'].empty:
+                print(f"No data available for {cam_prefix}.")
+                return
             for axis in ['X', 'Y', 'Z']:
                 col_name = f'{cam_prefix} Position {axis}'
                 data[col_name] -= data[col_name].iloc[0]
@@ -537,11 +563,12 @@ class NodeGUI(ctk.CTk):
                 col_name = f'{cam_prefix} Rotation {axis}'
                 data[col_name] -= data[col_name].iloc[0]
 
+
         # Check for available cameras
         available_cameras = []
         for cam_num in range(1, 4):
             col_name = f'Cam{cam_num} Position X'
-            if col_name in data.columns:
+            if col_name in data.columns and not data[col_name].empty:
                 available_cameras.append(cam_num)
                 adjust_positions(data, f'Cam{cam_num}')
 

@@ -1,0 +1,38 @@
+<!-- Run the aruco_detect node -->
+<launch>
+  <!-- namespace for camera input -->
+  <arg name="camera" default="/sony_cam5"/>
+  <arg name="image" default="image"/>
+  <arg name="transport" default="raw"/>
+  <arg name="fiducial_len" default="0.02"/>
+  <arg name="dictionary" default="0"/>
+  <arg name="do_pose_estimation" default="true"/>
+  <!-- If vis_msgs set to true, pose estimation will be published with ROS standard vision_msgs -->
+  <arg name="vis_msgs" default="false"/>
+  <arg name="ignore_fiducials" default="" />
+  <arg name="fiducial_len_override" default="" />
+  <arg name="verbose" default="false"/>
+  <arg name="experiment_name" default="exp_01"/>
+  <!-- <arg name="duration_in_seconds" default="10"/> -->
+  <!-- <arg name="pose_file" default="/home/ammar/sitl_ws/data/pose_data/pose_$(arg experiment_name).csv"/> -->
+
+
+  <node pkg="aruco_detect" name="aruco_detect_node"
+    type="aruco_detect" output="screen" respawn="false" ns="$(arg camera)" >
+    <param name="image_transport" value="$(arg transport)"/>
+    <param name="publish_images" value="true" />
+    <param name="fiducial_len" value="$(arg fiducial_len)"/>
+    <param name="dictionary" value="$(arg dictionary)"/>
+    <param name="do_pose_estimation" value="$(arg do_pose_estimation)"/>
+    <param name="vis_msgs" value="$(arg vis_msgs)"/>
+    <param name="ignore_fiducials" value="$(arg ignore_fiducials)"/>
+    <param name="fiducial_len_override" value="$(arg fiducial_len_override)"/>
+    <param name="verbose" value="$(arg verbose)"/>
+    <param name="experiment_name" value="$(arg experiment_name)"/>
+    <!-- <param name="duration_in_seconds" value="$(arg duration_in_seconds)"/>
+    <param name="pose_file" value="$(arg pose_file)"/> -->
+    <remap from="camera" to="image_raw"/>
+    <remap from="camera_info" to="camera_info"/>
+  </node>
+
+</launch>

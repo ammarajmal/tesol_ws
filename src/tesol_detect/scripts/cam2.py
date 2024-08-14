@@ -1,144 +1,168 @@
 #!/usr/bin/env python3
 import rospy
 from sensor_msgs.msg import Image, CameraInfo
-from geometry_msgs.msg import PoseStamped
 from cv_bridge import CvBridge, CvBridgeError
 import cv2
 import numpy as np
 import cv2.aruco as aruco
-from cv2.aruco import detectMarkers, estimatePoseSingleMarkers
 from fiducial_msgs.msg import FiducialTransform, FiducialTransformArray
+from scipy.spatial.transform import Rotation as R
+from filterpy.kalman import KalmanFilter
 
-
-class myDetector:
+class MyDetector:
     def __init__(self):
         rospy.init_node("sony_cam2_detect", anonymous=False)
         self.bridge = CvBridge()
         self.node_name = rospy.get_name()
-        # Ros parameters
-        self.camera_name = rospy.get_param("~camera_name", "sony_cam3")
-        self.aruco_dict_name = rospy.get_param("~aruco_dict", "DICT_4X4_1000")
-        self.aruco_marker_size = rospy.get_param("~aruco_marker_size", 0.02)
-        self.experiment_name = rospy.get_param("~experiment_name", "Exp1")
+        
+        # ROS parameters
+        self.camera_name = rospy.get_param("~camera_name", "sony_cam2")
+        self.aruco_dict_name = rospy.get_param("~aruco_dict", "DICT_7X7_1000")
+        self.aruco_marker_size = rospy.get_param("~aruco_marker_size", 0.020)
+        self.visualize = rospy.get_param("~visualize", True)
+        self.corner_refine_criteria = rospy.get_param(
+            "~corner_refine_criteria",
+            (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 20, 0.001)
+        )
+        
         # Subscribers and publishers
         self.image_sub = rospy.Subscriber(f"/{self.camera_name}/image_raw", Image, self.image_callback)
         self.camera_info_sub = rospy.Subscriber(f"/{self.camera_name}/camera_info", CameraInfo, self.camera_info_callback)
-        # self.pose_pub = rospy.Publisher(f"/{self.camera_name}/aruco_detect/pose", PoseStamped, queue_size=10)
         self.pose_fid_pub = rospy.Publisher(f"/{self.camera_name}/aruco_detect_node/fiducial_transforms", FiducialTransformArray, queue_size=10)
-        
-        self.camera_matrix = None
-        self.dist_coeffs = None
         
         self.aruco_dict = aruco.Dictionary_get(getattr(aruco, self.aruco_dict_name, aruco.DICT_4X4_50))
         self.parameters = aruco.DetectorParameters_create()
-        
         self.camera_matrix = None
         self.dist_coeffs = None
-        self.pose = PoseStamped()
-        self.image_received = False
-        self.camera_info_received = False
         
-        rospy.on_shutdown(self.cleanup)
+        # Kalman Filter for Translation (Position)
+        self.kf_t = KalmanFilter(dim_x=6, dim_z=3)
+        self.kf_t.F = np.eye(6)  # State transition matrix for translation
+        self.kf_t.H = np.hstack([np.eye(3), np.zeros((3, 3))])  # Measurement function for translation
+        self.kf_t.P *= 1000.  # Initial uncertainty for translation
+        self.kf_t.R = np.eye(3) * 0.01  # Measurement noise for translation
+        self.kf_t.Q = np.eye(6) * 0.1  # Process noise for translation
+        
+        # Kalman Filter for Rotation (Quaternion)
+        self.kf_q = KalmanFilter(dim_x=7, dim_z=4)  # Quaternion has 4 components
+        self.kf_q.F = np.eye(7)  # State transition matrix for quaternion
+        self.kf_q.H = np.hstack([np.eye(4), np.zeros((4, 3))])  # Measurement function for quaternion
+        self.kf_q.P *= 1000.  # Initial uncertainty for quaternion
+        self.kf_q.R = np.eye(4) * 0.01  # Measurement noise for quaternion
+        self.kf_q.Q = np.eye(7) * 0.1  # Process noise for quaternion
+        
+        self.initial_rotation_mat = None  # To store the initial rotation matrix
+
         rospy.loginfo("Aruco detector node is now running")
         rospy.spin()
+
     def cleanup(self):
         rospy.loginfo("Shutting down aruco detector node")
         cv2.destroyAllWindows()
+
     def camera_info_callback(self, msg):
+        """ Callback function for camera info: populate camera matrix and distortion coefficients """
         try:
             self.camera_matrix = np.array(msg.K).reshape(3, 3)
             self.dist_coeffs = np.array(msg.D)
-            self.camera_info_received = True
         except Exception as e:
             rospy.logerr(e)
-    def rotation_matrix_to_quaternion_custom(self, R):
-        q = np.empty((4,))
-        t = np.trace(R)
-        if t > 0:
-            S = np.sqrt(t + 1.0) * 2
-            q[3] = 0.25 * S
-            q[0] = (R[2, 1] - R[1, 2]) / S
-            q[1] = (R[0, 2] - R[2, 0]) / S
-            q[2] = (R[1, 0] - R[0, 1]) / S
-        else:
-            if (R[0, 0] > R[1, 1]) and (R[0, 0] > R[2, 2]):
-                S = np.sqrt(1.0 + R[0, 0] - R[1, 1] - R[2, 2]) * 2
-                q[3] = (R[2, 1] - R[1, 2]) / S
-                q[0] = 0.25 * S
-                q[1] = (R[0, 1] + R[1, 0]) / S
-                q[2] = (R[0, 2] + R[2, 0]) / S
-            elif (R[1, 1] > R[2, 2]):
-                S = np.sqrt(1.0 + R[1, 1] - R[0, 0] - R[2, 2]) * 2
-                q[3] = (R[0, 2] - R[2, 0]) / S
-                q[0] = (R[0, 1] + R[1, 0]) / S
-                q[1] = 0.25 * S
-                q[2] = (R[1, 2] + R[2, 1]) / S
-            else:
-                S = np.sqrt(1.0 + R[2, 2] - R[0, 0] - R[1, 1]) * 2
-                q[3] = (R[1, 0] - R[0, 1]) / S
-                q[0] = (R[0, 2] + R[2, 0]) / S
-                q[1] = (R[1, 2] + R[2, 1]) / S
 
-        # Normalize quaternion
-        q /= np.linalg.norm(q)
-        return q
     def image_callback(self, msg):
-        if not self.camera_info_received:
+        """ Callback function for image processing: reads image from the camera """
+        if self.camera_matrix is None or self.dist_coeffs is None:
             rospy.logwarn("Camera info not received")
             return
+
         try:
-            self.image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
-            self.image_received = True
-            gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
-            corners, ids, rejected = detectMarkers(gray, self.aruco_dict, parameters=self.parameters)
-            aruco.drawDetectedMarkers(self.image, corners, ids)
-            if ids is not None:
-                for corner in corners:
-                    cv2.cornerSubPix(gray, corner, winSize=(10, 10), zeroZone=(-1, -1), criteria=(cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.001))
-                rvecs, tvecs, _ = estimatePoseSingleMarkers(corners, self.aruco_marker_size, self.camera_matrix, self.dist_coeffs)
-                fiducial_array_msg = FiducialTransformArray()
-                fiducial_array_msg.header.stamp = rospy.Time.now()
-                fiducial_array_msg.header.frame_id = self.camera_name
-                
-                for i in range(len(ids)):
-                    aruco.drawAxis(self.image, self.camera_matrix, self.dist_coeffs, rvecs[i], tvecs[i], 0.2)
-                    transform = FiducialTransform()
-                    transform.fiducial_id = int(ids[i])
-                    transform.transform.translation.x = tvecs[i][0][0]
-                    transform.transform.translation.y = tvecs[i][0][1]
-                    transform.transform.translation.z = tvecs[i][0][2]
-                    rotation_mat, _ = cv2.Rodrigues(rvecs[i])
-                    quaternion = self.rotation_matrix_to_quaternion_custom(rotation_mat)
-                    transform.transform.rotation.w = quaternion[3]  # Access the fourth element (w)
-                    transform.transform.rotation.x = quaternion[0]
-                    transform.transform.rotation.y = quaternion[1]
-                    transform.transform.rotation.z = quaternion[2]
-                    transform.fiducial_area = 0.0
-                    transform.image_error = 0.0
-                    transform.object_error = 0.0
-                    
-                    # transform.transform.rotation.w = quaternion[3]
-                    fiducial_array_msg.transforms.append(transform)
-                    print(f'Fiducial msg: {fiducial_array_msg}')
-                
-                
-                    self.pose.header.stamp = msg.header.stamp
-                    self.pose.header.frame_id = f"aruco_{ids[i]}"
-                    self.pose.pose.position.x = tvecs[i][0][0]
-                    self.pose.pose.position.y = tvecs[i][0][1]
-                    self.pose.pose.position.z = tvecs[i][0][2]
-                    self.pose.pose.orientation.x = quaternion[0]
-                    self.pose.pose.orientation.y = quaternion[1]
-                    self.pose.pose.orientation.z = quaternion[2]
-                    self.pose.pose.orientation.w = quaternion[3]
-                    self.pose_fid_pub.publish(fiducial_array_msg)
-                    # self.pose_pub.publish(self.pose)
-                    # print(f"Published pose for aruco_{ids[i]}")
-                    # print(f"tvecs: {tvecs[i]}")
-                    # print(f"rvecs: {rvecs[i]}")
-            cv2.imshow("aruco_detect", self.image)
-            cv2.waitKey(1)
+            self.process_img_msg(msg)
         except CvBridgeError as e:
-            rospy.logerr(e)
+            rospy.logerr(f"CvBridge error: {e}")
+
+    def process_img_msg(self, msg):
+        """ Process the image message to detect aruco markers """
+        input_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+        input_image = cv2.resize(input_image, (640, 480))  # Example resizing for faster processing
+        gray = cv2.cvtColor(input_image, cv2.COLOR_BGR2GRAY)
+        corners, ids, _ = aruco.detectMarkers(gray, self.aruco_dict, parameters=self.parameters)
+        
+        if ids is not None:
+            # Refine the corner locations
+            for corner in corners:
+                cv2.cornerSubPix(gray, corner, winSize=(5, 5), zeroZone=(-1, -1), criteria=self.corner_refine_criteria)
+            
+            self.publish_fiducial_transforms(ids, corners, input_image)
+        
+        if self.visualize:
+            aruco.drawDetectedMarkers(input_image, corners, ids)
+            cv2.imshow(f"Camera {self.camera_name[-1]}", input_image)
+            cv2.waitKey(1)
+
+    def publish_fiducial_transforms(self, ids, corners, image):
+        """ Helper function to publish fiducial transforms in the marker frame """
+        fiducial_array_msg = FiducialTransformArray()
+        fiducial_array_msg.header.stamp = rospy.Time.now()
+        fiducial_array_msg.header.frame_id = f'Marker_{int(ids[0])}'
+
+        # Estimate pose using estimatePoseSingleMarkers
+        rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
+            corners, self.aruco_marker_size, self.camera_matrix, self.dist_coeffs
+        )
+
+        for i, fid_id in enumerate(ids):
+            # Convert rvec to rotation matrix
+            rotation_mat, _ = cv2.Rodrigues(rvecs[i])
+
+            if self.initial_rotation_mat is None:
+                # Store the initial rotation matrix
+                self.initial_rotation_mat = rotation_mat
+            
+            # Use the initial rotation matrix for inversion
+            inv_rotation_mat = np.linalg.inv(self.initial_rotation_mat)
+            inv_tvec = -inv_rotation_mat.dot(tvecs[i].flatten())
+
+            # Apply the Kalman Filter for Translation
+            self.kf_t.predict()
+            self.kf_t.update(inv_tvec)
+            inv_tvec = self.kf_t.x[:3].reshape(1, 3)  # Update the translation vector
+
+            # Convert rvec to quaternion for filtering
+            measured_quat = R.from_matrix(rotation_mat).as_quat()  # Quaternion [x, y, z, w]
+
+            # Apply the Kalman Filter for Quaternion
+            self.kf_q.predict()
+            self.kf_q.update(measured_quat.flatten())  # Flatten the quaternion to ensure it is a 1D array
+            estimated_quat = self.kf_q.x[:4].flatten()  # Updated quaternion
+
+            # Convert inverted rotation matrix to quaternion
+            inv_quat = R.from_quat(estimated_quat).as_quat()
+
+            # Debugging outputs
+            # print("Initial Rotation Matrix:", self.initial_rotation_mat)
+            # print("Inverted Rotation Matrix:", inv_rotation_mat)
+            # print("Inverted Translation Vector:", inv_tvec)
+
+            # Increase axis length for better visibility
+            axis_length = 0.2
+
+            # Draw and publish the pose using the initial rotation matrix for inversion
+            aruco.drawAxis(image, self.camera_matrix, self.dist_coeffs, inv_rotation_mat, inv_tvec.flatten(), axis_length)
+            transform = FiducialTransform()
+            transform.fiducial_id = int(fid_id)
+            transform.transform.translation.x = inv_tvec[0][0]
+            transform.transform.translation.y = inv_tvec[0][1]
+            transform.transform.translation.z = inv_tvec[0][2]
+            transform.transform.rotation.x = inv_quat[0]
+            transform.transform.rotation.y = inv_quat[1]
+            transform.transform.rotation.z = inv_quat[2]
+            transform.transform.rotation.w = inv_quat[3]
+            fiducial_array_msg.transforms.append(transform)
+        
+        self.pose_fid_pub.publish(fiducial_array_msg)
+        # rospy.loginfo(f"Published {len(ids)} fiducial transforms")
+
 if __name__ == "__main__":
-    myDetector()
+    try:
+        detector = MyDetector()
+    except rospy.ROSInterruptException:
+        pass
