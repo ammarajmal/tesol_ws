@@ -5,7 +5,6 @@ from cv_bridge import CvBridge, CvBridgeError
 import cv2
 import numpy as np
 import cv2.aruco as aruco
-import apriltag  # Import AprilTag library
 from fiducial_msgs.msg import FiducialTransform, FiducialTransformArray
 from scipy.spatial.transform import Rotation as R
 from filterpy.kalman import KalmanFilter
@@ -17,22 +16,22 @@ class MyDetector:
         self.node_name = rospy.get_name()
         
         # ROS parameters
-        self.camera_name = rospy.get_param("~camera_name", "sony_cam2")
-        self.apriltag_family = "tag36h11"  # Change to a supported tag family
-        self.aruco_marker_size = rospy.get_param("~aruco_marker_size", 0.020)  # Marker size in meters (20 mm)
+        self.camera_name = rospy.get_param("~camera", "sony_cam2")
+        self.aruco_dict_name = rospy.get_param("~dictionary", "DICT_7X7_1000")
+        self.aruco_marker_size = rospy.get_param("~fiducial_len", 0.020)
         self.visualize = rospy.get_param("~visualize", True)
-        
-        # Initialize AprilTag detector with the correct family
-        self.tag_detector = apriltag.Detector(
-            apriltag.DetectorOptions(families=self.apriltag_family)
+        self.corner_refine_criteria = rospy.get_param(
+            "~corner_refine_criteria",
+            (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 20, 0.001)
         )
         
         # Subscribers and publishers
         self.image_sub = rospy.Subscriber(f"/{self.camera_name}/image_raw", Image, self.image_callback)
         self.camera_info_sub = rospy.Subscriber(f"/{self.camera_name}/camera_info", CameraInfo, self.camera_info_callback)
-        self.pose_fid_pub = rospy.Publisher(f"/{self.camera_name}/aruco_detect_node/fiducial_transforms_apt3611", FiducialTransformArray, queue_size=10)
+        self.pose_fid_pub = rospy.Publisher(f"/{self.camera_name}/aruco_detect_node/fiducial_transforms", FiducialTransformArray, queue_size=10)
         
-
+        self.aruco_dict = aruco.Dictionary_get(getattr(aruco, self.aruco_dict_name, aruco.DICT_4X4_50))
+        self.parameters = aruco.DetectorParameters_create()
         self.camera_matrix = None
         self.dist_coeffs = None
         
@@ -54,11 +53,11 @@ class MyDetector:
         
         self.initial_rotation_mat = None  # To store the initial rotation matrix
 
-        rospy.loginfo("AprilTag detector node is now running")
+        rospy.loginfo("Aruco detector node is now running")
         rospy.spin()
 
     def cleanup(self):
-        rospy.loginfo("Shutting down AprilTag detector node")
+        rospy.loginfo("Shutting down aruco detector node")
         cv2.destroyAllWindows()
 
     def camera_info_callback(self, msg):
@@ -81,43 +80,38 @@ class MyDetector:
             rospy.logerr(f"CvBridge error: {e}")
 
     def process_img_msg(self, msg):
-        """ Process the image message to detect AprilTags """
+        """ Process the image message to detect aruco markers """
         input_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         input_image = cv2.resize(input_image, (640, 480))  # Example resizing for faster processing
         gray = cv2.cvtColor(input_image, cv2.COLOR_BGR2GRAY)
+        corners, ids, _ = aruco.detectMarkers(gray, self.aruco_dict, parameters=self.parameters)
         
-        # Detect AprilTags
-        tags = self.tag_detector.detect(gray)
-        
-        if tags:
-            self.publish_fiducial_transforms(tags, input_image)
+        if ids is not None:
+            # Refine the corner locations
+            for corner in corners:
+                cv2.cornerSubPix(gray, corner, winSize=(5, 5), zeroZone=(-1, -1), criteria=self.corner_refine_criteria)
+            
+            self.publish_fiducial_transforms(ids, corners, input_image)
         
         if self.visualize:
-            for tag in tags:
-                # Draw the bounding box
-                for idx in range(4):
-                    # Convert the floating-point coordinates to integers
-                    start_point = tuple(tag.corners[idx-1, :].astype(int))
-                    end_point = tuple(tag.corners[idx, :].astype(int))
-                    cv2.line(input_image, start_point, end_point, (0, 255, 0), 2)
-                # Draw the center of the tag
-                center_point = tuple(tag.center.astype(int))
-                cv2.circle(input_image, center_point, 5, (0, 0, 255), -1)
+            aruco.drawDetectedMarkers(input_image, corners, ids)
             cv2.imshow(f"Camera {self.camera_name[-1]}", input_image)
             cv2.waitKey(1)
 
-    def publish_fiducial_transforms(self, tags, image):
+    def publish_fiducial_transforms(self, ids, corners, image):
         """ Helper function to publish fiducial transforms in the marker frame """
         fiducial_array_msg = FiducialTransformArray()
         fiducial_array_msg.header.stamp = rospy.Time.now()
-        fiducial_array_msg.header.frame_id = 'Tag_{}'.format(int(tags[0].tag_id))
+        fiducial_array_msg.header.frame_id = f'Marker_{int(ids[0])}'
 
-        for tag in tags:
-            # Estimate pose based on tag corners
-            rvec, tvec = self.estimate_tag_pose(tag)
+        # Estimate pose using estimatePoseSingleMarkers
+        rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
+            corners, self.aruco_marker_size, self.camera_matrix, self.dist_coeffs
+        )
 
+        for i, fid_id in enumerate(ids):
             # Convert rvec to rotation matrix
-            rotation_mat, _ = cv2.Rodrigues(rvec)
+            rotation_mat, _ = cv2.Rodrigues(rvecs[i])
 
             if self.initial_rotation_mat is None:
                 # Store the initial rotation matrix
@@ -125,7 +119,7 @@ class MyDetector:
             
             # Use the initial rotation matrix for inversion
             inv_rotation_mat = np.linalg.inv(self.initial_rotation_mat)
-            inv_tvec = -inv_rotation_mat.dot(tvec.flatten())
+            inv_tvec = -inv_rotation_mat.dot(tvecs[i].flatten())
 
             # Apply the Kalman Filter for Translation
             self.kf_t.predict()
@@ -143,13 +137,18 @@ class MyDetector:
             # Convert inverted rotation matrix to quaternion
             inv_quat = R.from_quat(estimated_quat).as_quat()
 
+            # Debugging outputs
+            # print("Initial Rotation Matrix:", self.initial_rotation_mat)
+            # print("Inverted Rotation Matrix:", inv_rotation_mat)
+            # print("Inverted Translation Vector:", inv_tvec)
+
             # Increase axis length for better visibility
             axis_length = 0.2
 
             # Draw and publish the pose using the initial rotation matrix for inversion
             aruco.drawAxis(image, self.camera_matrix, self.dist_coeffs, inv_rotation_mat, inv_tvec.flatten(), axis_length)
             transform = FiducialTransform()
-            transform.fiducial_id = int(tag.tag_id)
+            transform.fiducial_id = int(fid_id)
             transform.transform.translation.x = inv_tvec[0][0]
             transform.transform.translation.y = inv_tvec[0][1]
             transform.transform.translation.z = inv_tvec[0][2]
@@ -160,23 +159,7 @@ class MyDetector:
             fiducial_array_msg.transforms.append(transform)
         
         self.pose_fid_pub.publish(fiducial_array_msg)
-
-    def estimate_tag_pose(self, tag):
-        """ Estimate the pose of the detected AprilTag """
-        # Define the 3D points of the tag in its own coordinate system
-        object_points = np.array([
-            [-self.aruco_marker_size/2, -self.aruco_marker_size/2, 0],
-            [ self.aruco_marker_size/2, -self.aruco_marker_size/2, 0],
-            [ self.aruco_marker_size/2,  self.aruco_marker_size/2, 0],
-            [-self.aruco_marker_size/2,  self.aruco_marker_size/2, 0]
-        ])
-        image_points = np.array(tag.corners)
-
-        # SolvePnP to get rvec and tvec
-        success, rvec, tvec = cv2.solvePnP(object_points, image_points, self.camera_matrix, self.dist_coeffs)
-        if not success:
-            raise ValueError("Pose estimation failed.")
-        return rvec, tvec
+        # rospy.loginfo(f"Published {len(ids)} fiducial transforms")
 
 if __name__ == "__main__":
     try:
