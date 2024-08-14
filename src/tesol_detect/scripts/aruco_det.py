@@ -16,15 +16,11 @@ class MyDetector:
         self.node_name = rospy.get_name()
         
         # ROS parameters
-        self.camera_name = rospy.get_param("~camera", "sony_cam2")
+        self.camera_name = rospy.get_param("~camera_name", "sony_cam12")
         self.aruco_dict_name = rospy.get_param("~dictionary", "DICT_7X7_1000")
         self.aruco_marker_size = rospy.get_param("~fiducial_len", 0.020)
         self.visualize = rospy.get_param("~visualize", True)
-        self.corner_refine_criteria = rospy.get_param(
-            "~corner_refine_criteria",
-            (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 20, 0.001)
-        )
-        
+        self.corner_refine_criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 20, 0.001)
         # Subscribers and publishers
         self.image_sub = rospy.Subscriber(f"/{self.camera_name}/image_raw", Image, self.image_callback)
         self.camera_info_sub = rospy.Subscriber(f"/{self.camera_name}/camera_info", CameraInfo, self.camera_info_callback)
@@ -99,6 +95,8 @@ class MyDetector:
             cv2.waitKey(1)
 
     def publish_fiducial_transforms(self, ids, corners, image):
+        if rospy.is_shutdown():
+            return
         """ Helper function to publish fiducial transforms in the marker frame """
         fiducial_array_msg = FiducialTransformArray()
         fiducial_array_msg.header.stamp = rospy.Time.now()

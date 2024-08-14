@@ -91,14 +91,17 @@ class NodeGUI(ctk.CTk):
 
         self.cam_pkg = 'sony_cam'
         self.detect_pkg = 'aruco_detect'
+        self.tesol_detect_pkg = 'tesol_detect'
         try:
             self.uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
             self.cam_launch_path = rospkg.RosPack().get_path(self.cam_pkg) + '/launch/'
             self.detect_launch_path = rospkg.RosPack().get_path(self.detect_pkg) + '/launch/'
+            self.tesol_detect_launch_path = rospkg.RosPack().get_path(self.tesol_detect_pkg) + '/launch/'
             self.cam_launch_file = f'{self.cam_launch_path}use_cam.launch'
             self.cam_view_launch_file = f'{self.cam_launch_path}use_viewcam.launch'
             self.cam_calib_launch_file = f'{self.cam_launch_path}calib.launch'
             self.detect_launch_file = f'{self.detect_launch_path}use_aruco_detect.launch'
+            self.tesol_detect_launch_file = f'{self.tesol_detect_launch_path}use_tesol_detect.launch'
         except rospkg.common.ResourceNotFound:
             print('ROS packages not found')
             self.cam_launch_file = None
