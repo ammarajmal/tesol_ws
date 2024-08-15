@@ -1,3 +1,3 @@
-Symlinking /home/tesol/tesol_ws/devel/share/tesol_detect/cmake/tesol_detectConfig.cmake
-Symlinking /home/tesol/tesol_ws/devel/share/tesol_detect/cmake/tesol_detectConfig-version.cmake
-Symlinking /home/tesol/tesol_ws/devel/lib/pkgconfig/tesol_detect.pc
+Linked: (/home/tesol/tesol_ws/devel/.private/tesol_detect/share/tesol_detect/cmake/tesol_detectConfig.cmake, /home/tesol/tesol_ws/devel/share/tesol_detect/cmake/tesol_detectConfig.cmake)
+Linked: (/home/tesol/tesol_ws/devel/.private/tesol_detect/share/tesol_detect/cmake/tesol_detectConfig-version.cmake, /home/tesol/tesol_ws/devel/share/tesol_detect/cmake/tesol_detectConfig-version.cmake)
+Linked: (/home/tesol/tesol_ws/devel/.private/tesol_detect/lib/pkgconfig/tesol_detect.pc, /home/tesol/tesol_ws/devel/lib/pkgconfig/tesol_detect.pc)

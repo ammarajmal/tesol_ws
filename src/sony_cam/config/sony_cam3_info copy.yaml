@@ -4,7 +4,7 @@ camera_name: sony_cam3
 camera_matrix:
   rows: 3
   cols: 3
-  data: [29090.91, 0, 320, 0, 32727.27, 240, 0, 0, 1]
+  data: [20125.27329469171, 0, 317.317890260488, 0, 24653.01600554101, 239.9398847585528, 0, 0, 1]
 distortion_model: plumb_bob
 distortion_coefficients:
   rows: 1
@@ -17,4 +17,4 @@ rectification_matrix:
 projection_matrix:
   rows: 3
   cols: 4
-  data: [29090.91, 0, 320, 0, 0, 32727.27, 240, 0, 0, 0, 1, 0]
+  data: [20102.720703125, 0, 317.0290687576453, 0, 0, 24620.798828125, 239.4702822013114, 0, 0, 0, 1, 0]

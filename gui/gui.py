@@ -56,7 +56,7 @@ class NodeGUI(ctk.CTk):
 
         self.experiment_name = 'Exp1'
         self.file_name = None
-        self.experiment_dur = 20 # seconds
+        self.experiment_dur = 10 # seconds
         self.exp_name_var = tk.StringVar(self, self.experiment_name)
         self.exp_dur_var = tk.StringVar(self, self.experiment_dur)
     
@@ -85,23 +85,20 @@ class NodeGUI(ctk.CTk):
         self.board_size_var = tk.StringVar(self, self.board_size)
 
         self.marker_dim = '0.020' # ARUCO marker dimension in meters
-        self.marker_dict = '0' #  ARUCO marker dictionary (DICT_4X4_50)
+        self.marker_dict = "DICT_6X6_1000" #  ARUCO marker dictionary (DICT_7X7_1000)
         self.marker_dim_var = tk.StringVar(self, self.marker_dim)
         self.marker_dict_var = tk.StringVar(self, self.marker_dict)
 
         self.cam_pkg = 'sony_cam'
-        self.detect_pkg = 'aruco_detect'
-        self.tesol_detect_pkg = 'tesol_detect'
+        self.detect_pkg = 'tesol_detect'
         try:
             self.uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
             self.cam_launch_path = rospkg.RosPack().get_path(self.cam_pkg) + '/launch/'
             self.detect_launch_path = rospkg.RosPack().get_path(self.detect_pkg) + '/launch/'
-            self.tesol_detect_launch_path = rospkg.RosPack().get_path(self.tesol_detect_pkg) + '/launch/'
             self.cam_launch_file = f'{self.cam_launch_path}use_cam.launch'
             self.cam_view_launch_file = f'{self.cam_launch_path}use_viewcam.launch'
             self.cam_calib_launch_file = f'{self.cam_launch_path}calib.launch'
-            self.detect_launch_file = f'{self.detect_launch_path}use_aruco_detect.launch'
-            self.tesol_detect_launch_file = f'{self.tesol_detect_launch_path}use_tesol_detect.launch'
+            self.detect_launch_file = f'{self.detect_launch_path}use_tesol.launch'
         except rospkg.common.ResourceNotFound:
             print('ROS packages not found')
             self.cam_launch_file = None
