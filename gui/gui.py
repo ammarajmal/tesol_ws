@@ -60,10 +60,10 @@ class NodeGUI(ctk.CTk):
         self.exp_name_var = tk.StringVar(self, self.experiment_name)
         self.exp_dur_var = tk.StringVar(self, self.experiment_dur)
     
-        self.image_width = '640'
-        self.image_height = '480'
-        # self.image_height = '720'
-        # self.image_width = '1080'
+        # self.image_width = '640'
+        # self.image_height = '480'
+        self.image_height = '720'
+        self.image_width = '1080'
         
         
         self.camera_resolution = self.image_width + 'x' + self.image_height
@@ -79,13 +79,13 @@ class NodeGUI(ctk.CTk):
         self.collectected_data_displacement = []
 
 
-        self.board_size = '6x7' # default board size for calibration
-        self.square_size = '0.006' # square size for calibration in meters = 6.33mm
+        self.board_size = '4x5' # default board size for calibration
+        self.square_size = '0.01153' # square size for calibration in meters = 6.33mm
         self.sq_size_var = tk.StringVar(self, self.square_size)
         self.board_size_var = tk.StringVar(self, self.board_size)
 
-        self.marker_dim = '0.020' # ARUCO marker dimension in meters
-        self.marker_dict = "DICT_6X6_1000" #  ARUCO marker dictionary (DICT_7X7_1000)
+        self.marker_dim = '0.030' # ARUCO marker dimension in meters
+        self.marker_dict = "DICT_4X4_1000" #  ARUCO marker dictionary (DICT_7X7_1000)
         self.marker_dim_var = tk.StringVar(self, self.marker_dim)
         self.marker_dict_var = tk.StringVar(self, self.marker_dict)
 

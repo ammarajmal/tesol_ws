@@ -1,0 +1,214 @@
+#!/usr/bin/env python3
+
+import rospy
+import cv2
+import numpy as np
+import cv2.aruco as aruco
+from fiducial_msgs.msg import FiducialTransform, FiducialTransformArray
+from scipy.spatial.transform import Rotation as R
+from sensor_msgs.msg import Image, CameraInfo
+from cv_bridge import CvBridge, CvBridgeError
+
+class ArucoDetector:
+    def __init__(self):
+        self.bridge = CvBridge()
+        self.node_name = rospy.get_name()
+
+        # Load ROS parameters
+        self.camera_name = rospy.get_param("~camera_name", "sony_cam1")
+        aruco_dict_name = rospy.get_param("~dictionary", "DICT_7X7_1000")
+        self.aruco_marker_size = rospy.get_param("~fiducial_len", 0.020)  # Marker size in meters
+        self.visualize = rospy.get_param("~visualize", True)
+
+        # Setup ROS Subscribers
+        self.image_sub = rospy.Subscriber(f"/{self.camera_name}/image_raw", Image, self.image_callback, queue_size=1)
+        self.camera_info_sub = rospy.Subscriber(f"/{self.camera_name}/camera_info", CameraInfo, self.camera_info_callback, queue_size=1)
+
+        # Setup ROS Publisher
+        self.pose_fid_pub = rospy.Publisher(f"/{self.camera_name}/aruco_detect_node/fiducial_transforms", FiducialTransformArray, queue_size=10)
+
+        # Initialize variables
+        self.camera_matrix = None
+        self.dist_coeffs = None
+        self.corner_refine_criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+        
+        # Setup Aruco dictionary and parameters
+        self.aruco_dict = aruco.Dictionary_get(getattr(aruco, aruco_dict_name, aruco.DICT_7X7_1000))
+        # self.parameters = self.setup_aruco_parameters()
+        self.parameters = aruco.DetectorParameters_create()
+
+        # Flags to check reception of camera info
+        self.camera_info_received = False
+
+        # Variables for averaging initial rotation matrices
+        self.initial_rotation_mats = []
+        self.initial_rotation_frames = 30  # Number of frames to average over
+        self.initial_rotation_mat = None
+
+        # Register shutdown hook
+        rospy.on_shutdown(self.cleanup)
+
+        rospy.loginfo(f"{self.node_name} is now running.")
+
+    def cleanup(self):
+        rospy.loginfo(f"Shutting down {self.node_name}")
+        cv2.destroyAllWindows()
+
+    def setup_aruco_parameters(self):
+        """ Setup aruco parameters for detection """
+        parameters = aruco.DetectorParameters_create()
+        parameters.adaptiveThreshConstant = 7
+        parameters.adaptiveThreshWinSizeMin = 3
+        parameters.adaptiveThreshWinSizeMax = 23
+        parameters.adaptiveThreshWinSizeStep = 10
+
+        # Marker border and corner detection
+        parameters.minMarkerPerimeterRate = 0.03
+        parameters.maxMarkerPerimeterRate = 4.0
+        parameters.polygonalApproxAccuracyRate = 0.05
+        parameters.minCornerDistanceRate = 0.05
+
+        # Corner refinement
+        parameters.cornerRefinementMethod = aruco.CORNER_REFINE_SUBPIX
+        parameters.cornerRefinementWinSize = 5
+        parameters.cornerRefinementMaxIterations = 30
+        parameters.cornerRefinementMinAccuracy = 0.1
+
+        # Perspective removal
+        parameters.perspectiveRemovePixelPerCell = 8
+        parameters.perspectiveRemoveIgnoredMarginPerCell = 0.13
+
+        # Error correction
+        parameters.maxErroneousBitsInBorderRate = 0.04
+        parameters.errorCorrectionRate = 0.6
+
+        return parameters
+
+    def camera_info_callback(self, msg):
+        """ Callback function for camera info: populate camera matrix and distortion coefficients """
+        if not self.camera_info_received:
+            try:
+                self.camera_matrix = np.array(msg.K).reshape(3, 3)
+                self.dist_coeffs = np.array(msg.D)
+                self.camera_info_received = True
+                rospy.loginfo("Camera info received and camera parameters initialized.")
+            except Exception as e:
+                rospy.logerr(f"Error processing camera info: {e}")
+
+    def image_callback(self, msg):
+        """ Callback function for image processing: reads image from the camera """
+        if not self.camera_info_received:
+            rospy.logwarn("Camera info not yet received. Skipping image processing.")
+            return
+
+        try:
+            self.process_img_msg(msg)
+        except CvBridgeError as e:
+            rospy.logerr(f"CvBridge error: {e}")
+
+    def process_img_msg(self, msg):
+        """ Process the image message to detect aruco markers """
+        input_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+        # input_image = cv2.resize(input_image, (640, 480))  # Example resizing for faster processing
+        gray = cv2.cvtColor(input_image, cv2.COLOR_BGR2GRAY)
+        corners, ids, _ = aruco.detectMarkers(gray, self.aruco_dict, parameters=self.parameters)
+        
+        if ids is not None and len(ids) > 0:
+            # Refine corners
+            for corner in corners:
+                cv2.cornerSubPix(gray, corner, winSize=(5,5), zeroZone=(-1,-1), criteria=self.corner_refine_criteria)
+            
+            self.publish_fiducial_transforms(ids, corners, input_image)
+            
+            if self.visualize:
+                aruco.drawDetectedMarkers(input_image, corners, ids)
+                cv2.imshow(f"{self.camera_name} Detection", input_image)
+                cv2.waitKey(1)
+        else:
+            rospy.logdebug("No markers detected in the current frame.")
+
+    def publish_fiducial_transforms(self, ids, corners, image):
+        if rospy.is_shutdown():
+            return
+
+        fiducial_array_msg = FiducialTransformArray()
+        fiducial_array_msg.header.stamp = rospy.Time.now()
+        fiducial_array_msg.header.frame_id = f'{self.camera_name}_marker_frame'
+
+        rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
+            corners, self.aruco_marker_size, self.camera_matrix, self.dist_coeffs
+        )
+
+        # Average the initial rotation matrix over several frames
+        if self.initial_rotation_mat is None and len(self.initial_rotation_mats) < self.initial_rotation_frames:
+            for i in range(len(ids)):
+                rotation_mat, _ = cv2.Rodrigues(rvecs[i])
+                self.initial_rotation_mats.append(rotation_mat)
+            
+            if len(self.initial_rotation_mats) == self.initial_rotation_frames:
+                self.initial_rotation_mat = np.mean(self.initial_rotation_mats, axis=0)
+                # Ensure orthogonality
+                u, _, vt = np.linalg.svd(self.initial_rotation_mat)
+                self.initial_rotation_mat = np.dot(u, vt)
+                rospy.loginfo("Initial rotation matrix computed and set.")
+            else:
+                rospy.loginfo(f"Accumulating rotation matrices for initialization: {len(self.initial_rotation_mats)}/{self.initial_rotation_frames}")
+            return  # Skip publishing until initial rotation matrix is set
+
+        for i, fid_id in enumerate(ids):
+            rotation_mat, _ = cv2.Rodrigues(rvecs[i])
+
+            # Transform to marker frame
+            inv_rotation_mat = np.linalg.inv(self.initial_rotation_mat)
+            inv_tvec = -inv_rotation_mat.dot(tvecs[i].flatten())
+            # inv_rotation_mat = np.dot(self.initial_rotation_mat.T, rotation_mat)
+            # inv_tvec = np.dot(self.initial_rotation_mat.T, tvecs[i].reshape(3,1))
+
+
+            fiducial_msg = FiducialTransform()
+            fiducial_msg.fiducial_id = int(fid_id[0])
+            fiducial_msg.transform.translation.x = inv_tvec[0]
+            fiducial_msg.transform.translation.y = inv_tvec[1]
+            fiducial_msg.transform.translation.z = inv_tvec[2]
+
+            # fiducial_msg.transform.translation.x = inv_tvec[0][0]
+            # fiducial_msg.transform.translation.y = inv_tvec[1][0]
+            # fiducial_msg.transform.translation.z = inv_tvec[2][0]
+
+            r = R.from_matrix(inv_rotation_mat)
+            quat = r.as_quat()
+            fiducial_msg.transform.rotation.x = quat[0]
+            fiducial_msg.transform.rotation.y = quat[1]
+            fiducial_msg.transform.rotation.z = quat[2]
+            fiducial_msg.transform.rotation.w = quat[3]
+
+            fiducial_msg.image_error = 0.0  # Placeholder
+            fiducial_msg.object_error = 0.0  # Placeholder
+
+            fiducial_array_msg.transforms.append(fiducial_msg)
+
+            # Draw axis on the image for visualization
+            if self.visualize:
+                aruco.drawAxis(image, self.camera_matrix, self.dist_coeffs, rvecs[i], tvecs[i], self.aruco_marker_size )
+
+        # Publish the fiducial transforms
+        self.pose_fid_pub.publish(fiducial_array_msg)
+
+        # Log the detected fiducials
+        # for transform in fiducial_array_msg.transforms:
+        #     rospy.loginfo(f"Detected Fiducial ID: {transform.fiducial_id}, "
+        #                   f"Position: ({transform.transform.translation.x:.4f}, "
+        #                   f"{transform.transform.translation.y:.4f}, "
+        #                   f"{transform.transform.translation.z:.4f}), "
+        #                   f"Orientation (Quat): ({transform.transform.rotation.x:.4f}, "
+        #                   f"{transform.transform.rotation.y:.4f}, "
+        #                   f"{transform.transform.rotation.z:.4f}, "
+        #                   f"{transform.transform.rotation.w:.4f})")
+
+if __name__ == "__main__":
+    try:
+        rospy.init_node("aruco_detector_node", anonymous=False, log_level=rospy.DEBUG)
+        detector = ArucoDetector()
+        rospy.spin()
+    except rospy.ROSInterruptException:
+        pass

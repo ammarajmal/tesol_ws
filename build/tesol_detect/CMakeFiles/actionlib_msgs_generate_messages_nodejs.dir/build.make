@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/tesol/tesol_ws/src/tesol_detect
+CMAKE_SOURCE_DIR = /home/ammar/tesol_ws/src/tesol_detect
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/tesol/tesol_ws/build/tesol_detect
+CMAKE_BINARY_DIR = /home/ammar/tesol_ws/build/tesol_detect
 
 # Utility rule file for actionlib_msgs_generate_messages_nodejs.
 
@@ -67,6 +67,6 @@ CMakeFiles/actionlib_msgs_generate_messages_nodejs.dir/clean:
 .PHONY : CMakeFiles/actionlib_msgs_generate_messages_nodejs.dir/clean
 
 CMakeFiles/actionlib_msgs_generate_messages_nodejs.dir/depend:
-	cd /home/tesol/tesol_ws/build/tesol_detect && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/tesol/tesol_ws/src/tesol_detect /home/tesol/tesol_ws/src/tesol_detect /home/tesol/tesol_ws/build/tesol_detect /home/tesol/tesol_ws/build/tesol_detect /home/tesol/tesol_ws/build/tesol_detect/CMakeFiles/actionlib_msgs_generate_messages_nodejs.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/ammar/tesol_ws/build/tesol_detect && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/ammar/tesol_ws/src/tesol_detect /home/ammar/tesol_ws/src/tesol_detect /home/ammar/tesol_ws/build/tesol_detect /home/ammar/tesol_ws/build/tesol_detect /home/ammar/tesol_ws/build/tesol_detect/CMakeFiles/actionlib_msgs_generate_messages_nodejs.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/actionlib_msgs_generate_messages_nodejs.dir/depend
 

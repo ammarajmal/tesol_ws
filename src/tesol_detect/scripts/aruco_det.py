@@ -10,7 +10,6 @@ from scipy.spatial.transform import Rotation as R
 
 class MyDetector:
     def __init__(self):
-        rospy.init_node("sony_cam2_detect", anonymous=False)
         self.bridge = CvBridge()
         self.node_name = rospy.get_name()
         
@@ -33,7 +32,6 @@ class MyDetector:
         self.initial_rotation_mat = None  # To store the initial rotation matrix for conversion of pose from camera to marker frame
 
         rospy.loginfo("Aruco detector node is now running")
-        rospy.spin()
 
     def cleanup(self):
         rospy.loginfo("Shutting down aruco detector node")
@@ -72,11 +70,13 @@ class MyDetector:
             
             self.publish_fiducial_transforms(ids, corners, input_image)
         
-        if self.visualize:
-            aruco.drawDetectedMarkers(input_image, corners, ids)
-            cv2.imshow(f"Camera {self.camera_name[-1]}", input_image)
-            cv2.waitKey(1)
-
+            if self.visualize:
+                aruco.drawDetectedMarkers(input_image, corners, ids)
+                cv2.imshow(f"Camera {self.camera_name[-1]}", input_image)
+                cv2.waitKey(1)
+        else:
+            rospy.logdebug("No markers detected in the current frame.")
+        
     def publish_fiducial_transforms(self, ids, corners, image):
         if rospy.is_shutdown():
             return
@@ -115,6 +115,8 @@ class MyDetector:
 
 if __name__ == "__main__":
     try:
+        rospy.init_node("aruco_detector_node", anonymous=False, log_level=rospy.DEBUG)
         detector = MyDetector()
+        rospy.spin()
     except rospy.ROSInterruptException:
         pass
