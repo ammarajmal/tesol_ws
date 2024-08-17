@@ -15,4 +15,4 @@
 	url = https://github.com/ammarajmal/cv_camera.git
 [submodule "src/charuco_calibration"]
 	path = src/charuco_calibration
-	url = https://github.com/ammarajmal/charuco_calibration_copter.git
+	url = https://github.com/ammarajmal/charuco_calibration.git
