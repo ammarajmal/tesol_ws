@@ -18,7 +18,7 @@ class MyDetector:
         self.aruco_dict_name = rospy.get_param("~dictionary", "DICT_7X7_1000")
         self.aruco_marker_size = rospy.get_param("~fiducial_len", 0.020)
         self.visualize = rospy.get_param("~visualize", True)
-        self.corner_refine_criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 20, 0.001)
+        self.corner_refine_criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 0.001)
         # Subscribers and publishers
         self.image_sub = rospy.Subscriber(f"/{self.camera_name}/image_raw", Image, self.image_callback)
         self.camera_info_sub = rospy.Subscriber(f"/{self.camera_name}/camera_info", CameraInfo, self.camera_info_callback)
@@ -96,29 +96,42 @@ class MyDetector:
 
             for i, fid_id in enumerate(ids):
                 rotation_mat, _ = cv2.Rodrigues(rvecs[i])
-
-                if self.initial_rotation_mat is None:
-                    self.initial_rotation_mat = rotation_mat
-
-                inv_rotation_mat = np.linalg.inv(self.initial_rotation_mat)
-                inv_tvec = -inv_rotation_mat.dot(tvecs[i].flatten())
-
+                
                 transform = FiducialTransform()
                 transform.fiducial_id = int(fid_id)
-                transform.transform.translation.x = inv_tvec[0]
-                transform.transform.translation.y = inv_tvec[1]
-                transform.transform.translation.z = inv_tvec[2]
-                r = R.from_matrix(inv_rotation_mat)
+                transform.transform.translation.x = tvecs[i][0][0]
+                transform.transform.translation.y = tvecs[i][0][1]
+                transform.transform.translation.z = tvecs[i][0][2]
+                r = R.from_matrix(rotation_mat)
                 quat = r.as_quat()
                 transform.transform.rotation.x = quat[0]
                 transform.transform.rotation.y = quat[1]
                 transform.transform.rotation.z = quat[2]
                 transform.transform.rotation.w = quat[3]
-
                 fiducial_array_msg.transforms.append(transform)
+
+                # if self.initial_rotation_mat is None:
+                #     self.initial_rotation_mat = rotation_mat
+
+                # inv_rotation_mat = np.linalg.inv(self.initial_rotation_mat)
+                # inv_tvec = -inv_rotation_mat.dot(tvecs[i].flatten())
+
+                # transform = FiducialTransform()
+                # transform.fiducial_id = int(fid_id)
+                # transform.transform.translation.x = inv_tvec[0]
+                # transform.transform.translation.y = inv_tvec[1]
+                # transform.transform.translation.z = inv_tvec[2]
+                # r = R.from_matrix(inv_rotation_mat)
+                # quat = r.as_quat()
+                # transform.transform.rotation.x = quat[0]
+                # transform.transform.rotation.y = quat[1]
+                # transform.transform.rotation.z = quat[2]
+                # transform.transform.rotation.w = quat[3]
+
+                # fiducial_array_msg.transforms.append(transform)
                 
-                # Update the last known transform
-                self.last_known_transforms[int(fid_id)] = transform
+                # # Update the last known transform
+                # self.last_known_transforms[int(fid_id)] = transform
 
                 if self.visualize:
                     aruco.drawAxis(image, self.camera_matrix, self.dist_coeffs, rvecs[i], tvecs[i], self.aruco_marker_size/2)
