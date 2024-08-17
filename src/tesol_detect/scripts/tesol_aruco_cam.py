@@ -29,9 +29,6 @@ class MyDetector:
         self.camera_matrix = None
         self.dist_coeffs = None
         self.initial_rotation_mats = []
-        self.initial_rotation_frames = 10
-        self.initial_rotation_mat = None  # To store the initial rotation matrix for conversion of pose from camera to marker frame
-        self.last_known_transforms = {}  # To store the last known transforms for each marker ID
 
 
         rospy.loginfo("Aruco detector node is now running")
@@ -65,7 +62,6 @@ class MyDetector:
         # input_image = cv2.resize(input_image, (640, 480))  # Example resizing for faster processing
         gray = cv2.cvtColor(input_image, cv2.COLOR_BGR2GRAY)
         corners, ids, _ = aruco.detectMarkers(gray, self.aruco_dict, parameters=self.parameters)
-        # corners, ids, _ = aruco.detectMarkers(gray, self.aruco_dict)
         
         if ids is not None:
             # # Refine the corner locations
@@ -109,29 +105,6 @@ class MyDetector:
                 transform.transform.rotation.z = quat[2]
                 transform.transform.rotation.w = quat[3]
                 fiducial_array_msg.transforms.append(transform)
-
-                # if self.initial_rotation_mat is None:
-                #     self.initial_rotation_mat = rotation_mat
-
-                # inv_rotation_mat = np.linalg.inv(self.initial_rotation_mat)
-                # inv_tvec = -inv_rotation_mat.dot(tvecs[i].flatten())
-
-                # transform = FiducialTransform()
-                # transform.fiducial_id = int(fid_id)
-                # transform.transform.translation.x = inv_tvec[0]
-                # transform.transform.translation.y = inv_tvec[1]
-                # transform.transform.translation.z = inv_tvec[2]
-                # r = R.from_matrix(inv_rotation_mat)
-                # quat = r.as_quat()
-                # transform.transform.rotation.x = quat[0]
-                # transform.transform.rotation.y = quat[1]
-                # transform.transform.rotation.z = quat[2]
-                # transform.transform.rotation.w = quat[3]
-
-                # fiducial_array_msg.transforms.append(transform)
-                
-                # # Update the last known transform
-                # self.last_known_transforms[int(fid_id)] = transform
 
                 if self.visualize:
                     aruco.drawAxis(image, self.camera_matrix, self.dist_coeffs, rvecs[i], tvecs[i], self.aruco_marker_size/2)
