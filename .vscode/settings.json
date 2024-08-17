@@ -70,5 +70,6 @@
     "string": "c",
     "unordered_map": "c",
     "string_view": "c"
-  }
+  },
+  "cmake.sourceDirectory": "/home/tesol/tesol_ws/build/catkin_tools_prebuild"
 }
