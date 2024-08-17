@@ -64,6 +64,7 @@ class MyDetector:
         input_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         # input_image = cv2.resize(input_image, (640, 480))  # Example resizing for faster processing
         gray = cv2.cvtColor(input_image, cv2.COLOR_BGR2GRAY)
+        gray = cv2.GaussianBlur(gray, (5, 5), 0)
         corners, ids, _ = aruco.detectMarkers(gray, self.aruco_dict, parameters=self.parameters)
         # corners, ids, _ = aruco.detectMarkers(gray, self.aruco_dict)
         
@@ -101,7 +102,8 @@ class MyDetector:
                     self.initial_rotation_mat = rotation_mat
 
                 inv_rotation_mat = np.linalg.inv(self.initial_rotation_mat)
-                inv_tvec = -inv_rotation_mat.dot(tvecs[i].flatten())
+                inv_tvec = -inv_rotation_mat.dot(tvecs[i].T)
+
 
                 transform = FiducialTransform()
                 transform.fiducial_id = int(fid_id)

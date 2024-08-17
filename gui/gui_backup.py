@@ -552,12 +552,25 @@ class NodeGUI(ctk.CTk):
 
         data = pd.read_csv(self.file_name)
 
+        def adjust_positions(data, cam_prefix):
+            if f'{cam_prefix} Position X' not in data.columns or data[f'{cam_prefix} Position X'].empty:
+                print(f"No data available for {cam_prefix}.")
+                return
+            for axis in ['X', 'Y', 'Z']:
+                col_name = f'{cam_prefix} Position {axis}'
+                data[col_name] -= data[col_name].iloc[0]
+            for axis in ['X', 'Y', 'Z', 'W']:
+                col_name = f'{cam_prefix} Rotation {axis}'
+                data[col_name] -= data[col_name].iloc[0]
+
+
         # Check for available cameras
         available_cameras = []
         for cam_num in range(1, 4):
             col_name = f'Cam{cam_num} Position X'
             if col_name in data.columns and not data[col_name].empty:
                 available_cameras.append(cam_num)
+                adjust_positions(data, f'Cam{cam_num}')
 
         if not available_cameras:
             print("No camera data available.")
@@ -595,7 +608,6 @@ class NodeGUI(ctk.CTk):
         plt.savefig(file_name)
         print(f'Plot saved to {file_name}')
         plt.show()
-
 
     def create_middle_first_frame(self)-> None:
         ''' Creates the middle frame for setting system parameters '''
