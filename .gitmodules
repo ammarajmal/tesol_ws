@@ -10,3 +10,6 @@
 [submodule "src/camera_info_manager_py"]
 	path = src/camera_info_manager_py
 	url = https://github.com/ammarajmal/camera_info_manager_py.git
+[submodule "src/cv_camera"]
+	path = src/cv_camera
+	url = https://github.com/ammarajmal/cv_camera.git
