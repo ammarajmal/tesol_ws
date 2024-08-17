@@ -84,8 +84,8 @@ class NodeGUI(ctk.CTk):
         self.sq_size_var = tk.StringVar(self, self.square_size)
         self.board_size_var = tk.StringVar(self, self.board_size)
 
-        self.marker_dim = '0.030' # ARUCO marker dimension in meters
-        self.marker_dict = "DICT_4X4_1000" #  ARUCO marker dictionary (DICT_7X7_1000)
+        self.marker_dim = '0.020' # ARUCO marker dimension in meters
+        self.marker_dict = "DICT_7X7_1000" #  ARUCO marker dictionary (DICT_7X7_1000)
         self.marker_dim_var = tk.StringVar(self, self.marker_dim)
         self.marker_dict_var = tk.StringVar(self, self.marker_dict)
 

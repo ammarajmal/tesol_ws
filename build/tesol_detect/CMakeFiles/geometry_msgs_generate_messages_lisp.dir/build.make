@@ -43,10 +43,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/ammar/tesol_ws/src/tesol_detect
+CMAKE_SOURCE_DIR = /home/tesol/tesol_ws/src/tesol_detect
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/ammar/tesol_ws/build/tesol_detect
+CMAKE_BINARY_DIR = /home/tesol/tesol_ws/build/tesol_detect
 
 # Utility rule file for geometry_msgs_generate_messages_lisp.
 
@@ -67,6 +67,6 @@ CMakeFiles/geometry_msgs_generate_messages_lisp.dir/clean:
 .PHONY : CMakeFiles/geometry_msgs_generate_messages_lisp.dir/clean
 
 CMakeFiles/geometry_msgs_generate_messages_lisp.dir/depend:
-	cd /home/ammar/tesol_ws/build/tesol_detect && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/ammar/tesol_ws/src/tesol_detect /home/ammar/tesol_ws/src/tesol_detect /home/ammar/tesol_ws/build/tesol_detect /home/ammar/tesol_ws/build/tesol_detect /home/ammar/tesol_ws/build/tesol_detect/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/tesol/tesol_ws/build/tesol_detect && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/tesol/tesol_ws/src/tesol_detect /home/tesol/tesol_ws/src/tesol_detect /home/tesol/tesol_ws/build/tesol_detect /home/tesol/tesol_ws/build/tesol_detect /home/tesol/tesol_ws/build/tesol_detect/CMakeFiles/geometry_msgs_generate_messages_lisp.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/geometry_msgs_generate_messages_lisp.dir/depend
 

@@ -1,6 +1,6 @@
-devel_space: /home/ammar/tesol_ws/devel
+devel_space: /home/tesol/tesol_ws/devel
 install: false
-install_space: /home/ammar/tesol_ws/install
+install_space: /home/tesol/tesol_ws/install
 profile: default
-source_space: /home/ammar/tesol_ws/src
-workspace: /home/ammar/tesol_ws
+source_space: /home/tesol/tesol_ws/src
+workspace: /home/tesol/tesol_ws

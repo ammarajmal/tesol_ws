@@ -67,14 +67,14 @@ set(catkin_tools_prebuild_CONFIG_INCLUDED TRUE)
 
 # set variables for source/devel/install prefixes
 if("FALSE" STREQUAL "TRUE")
-  set(catkin_tools_prebuild_SOURCE_PREFIX /home/ammar/tesol_ws/build/catkin_tools_prebuild)
-  set(catkin_tools_prebuild_DEVEL_PREFIX /home/ammar/tesol_ws/devel/.private/catkin_tools_prebuild)
+  set(catkin_tools_prebuild_SOURCE_PREFIX /home/tesol/tesol_ws/build/catkin_tools_prebuild)
+  set(catkin_tools_prebuild_DEVEL_PREFIX /home/tesol/tesol_ws/devel/.private/catkin_tools_prebuild)
   set(catkin_tools_prebuild_INSTALL_PREFIX "")
   set(catkin_tools_prebuild_PREFIX ${catkin_tools_prebuild_DEVEL_PREFIX})
 else()
   set(catkin_tools_prebuild_SOURCE_PREFIX "")
   set(catkin_tools_prebuild_DEVEL_PREFIX "")
-  set(catkin_tools_prebuild_INSTALL_PREFIX /home/ammar/tesol_ws/install)
+  set(catkin_tools_prebuild_INSTALL_PREFIX /home/tesol/tesol_ws/install)
   set(catkin_tools_prebuild_PREFIX ${catkin_tools_prebuild_INSTALL_PREFIX})
 endif()
 
@@ -154,7 +154,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/ammar/tesol_ws/install/lib;/home/ammar/tesol_ws/devel/lib;/home/ammar/sitl_ws/devel/lib;/opt/ros/noetic/lib)
+    foreach(path /home/tesol/tesol_ws/install/lib;/opt/ros/noetic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
