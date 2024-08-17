@@ -15,10 +15,10 @@ class MyDetector:
         
         # ROS parameters
         self.camera_name = rospy.get_param("~camera_name", "sony_cam1")
-        self.aruco_dict_name = rospy.get_param("~dictionary", "DICT_4X4_1000")
-        self.aruco_marker_size = rospy.get_param("~fiducial_len", 0.030)
+        self.aruco_dict_name = rospy.get_param("~dictionary", "DICT_7X7_1000")
+        self.aruco_marker_size = rospy.get_param("~fiducial_len", 0.020)
         self.visualize = rospy.get_param("~visualize", True)
-        self.corner_refine_criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 20, 0.001)
+        self.corner_refine_criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 0.001)
         # Subscribers and publishers
         self.image_sub = rospy.Subscriber(f"/{self.camera_name}/image_raw", Image, self.image_callback)
         self.camera_info_sub = rospy.Subscriber(f"/{self.camera_name}/camera_info", CameraInfo, self.camera_info_callback)
@@ -31,6 +31,8 @@ class MyDetector:
         self.initial_rotation_mats = []
         self.initial_rotation_frames = 10
         self.initial_rotation_mat = None  # To store the initial rotation matrix for conversion of pose from camera to marker frame
+        self.last_known_transforms = {}  # To store the last known transforms for each marker ID
+
 
         rospy.loginfo("Aruco detector node is now running")
 
@@ -63,11 +65,12 @@ class MyDetector:
         # input_image = cv2.resize(input_image, (640, 480))  # Example resizing for faster processing
         gray = cv2.cvtColor(input_image, cv2.COLOR_BGR2GRAY)
         corners, ids, _ = aruco.detectMarkers(gray, self.aruco_dict, parameters=self.parameters)
+        # corners, ids, _ = aruco.detectMarkers(gray, self.aruco_dict)
         
         if ids is not None:
-            # Refine the corner locations
+            # # Refine the corner locations
             for corner in corners:
-                cv2.cornerSubPix(gray, corner, winSize=(5, 5), zeroZone=(-1, -1), criteria=self.corner_refine_criteria)
+                cv2.cornerSubPix(gray, corner, winSize=(10, 10), zeroZone=(-1, -1), criteria=self.corner_refine_criteria)
             
             self.publish_fiducial_transforms(ids, corners, input_image)
         
@@ -84,54 +87,47 @@ class MyDetector:
 
         fiducial_array_msg = FiducialTransformArray()
         fiducial_array_msg.header.stamp = rospy.Time.now()
-        fiducial_array_msg.header.frame_id = f'{self.camera_name}_frame'  # Changed frame_id
+        fiducial_array_msg.header.frame_id = f'{self.camera_name}_frame'
 
-        rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
-            corners, self.aruco_marker_size, self.camera_matrix, self.dist_coeffs
-        )
+        if ids is not None:
+            rvecs, tvecs, _ = aruco.estimatePoseSingleMarkers(
+                corners, self.aruco_marker_size, self.camera_matrix, self.dist_coeffs
+            )
 
-        # Average the initial rotation matrix over several frames
-        if self.initial_rotation_mat is None and len(self.initial_rotation_mats) < self.initial_rotation_frames:
-            for i in range(len(ids)):
+            for i, fid_id in enumerate(ids):
                 rotation_mat, _ = cv2.Rodrigues(rvecs[i])
-                self.initial_rotation_mats.append(rotation_mat)
-            
-            if len(self.initial_rotation_mats) == self.initial_rotation_frames:
-                self.initial_rotation_mat = np.mean(self.initial_rotation_mats, axis=0)
-                # Ensure orthogonality
-                u, _, vt = np.linalg.svd(self.initial_rotation_mat)
-                self.initial_rotation_mat = np.dot(u, vt)
-                rospy.loginfo("Initial rotation matrix computed and set.")
-            else:
-                rospy.loginfo(f"Accumulating rotation matrices for initialization: {len(self.initial_rotation_mats)}/{self.initial_rotation_frames}")
-            return  # Skip publishing until initial rotation matrix is set
 
+                if self.initial_rotation_mat is None:
+                    self.initial_rotation_mat = rotation_mat
 
-        for i, fid_id in enumerate(ids):
-            rotation_mat, _ = cv2.Rodrigues(rvecs[i])
+                inv_rotation_mat = np.linalg.inv(self.initial_rotation_mat)
+                inv_tvec = -inv_rotation_mat.dot(tvecs[i].flatten())
 
-            if self.initial_rotation_mat is None:
-                self.initial_rotation_mat = rotation_mat
-            
+                transform = FiducialTransform()
+                transform.fiducial_id = int(fid_id)
+                transform.transform.translation.x = inv_tvec[0]
+                transform.transform.translation.y = inv_tvec[1]
+                transform.transform.translation.z = inv_tvec[2]
+                r = R.from_matrix(inv_rotation_mat)
+                quat = r.as_quat()
+                transform.transform.rotation.x = quat[0]
+                transform.transform.rotation.y = quat[1]
+                transform.transform.rotation.z = quat[2]
+                transform.transform.rotation.w = quat[3]
 
-            inv_rotation_mat = np.linalg.inv(self.initial_rotation_mat)
-            inv_tvec = -inv_rotation_mat.dot(tvecs[i].flatten())
+                fiducial_array_msg.transforms.append(transform)
+                
+                # Update the last known transform
+                self.last_known_transforms[int(fid_id)] = transform
 
-            transform = FiducialTransform()
-            transform.fiducial_id = int(fid_id)
-            transform.transform.translation.x = inv_tvec[0]
-            transform.transform.translation.y = inv_tvec[1]
-            transform.transform.translation.z = inv_tvec[2]
-            r = R.from_matrix(inv_rotation_mat)
-            quat = r.as_quat()
-            transform.transform.rotation.x = quat[0]
-            transform.transform.rotation.y = quat[1]
-            transform.transform.rotation.z = quat[2]
-            transform.transform.rotation.w = quat[3]
-            fiducial_array_msg.transforms.append(transform)
-            if self.visualize:
-                aruco.drawAxis(image, self.camera_matrix, self.dist_coeffs, rvecs[i], tvecs[i], self.aruco_marker_size/2)
-        
+                if self.visualize:
+                    aruco.drawAxis(image, self.camera_matrix, self.dist_coeffs, rvecs[i], tvecs[i], self.aruco_marker_size/2)
+        else:
+            # If no markers are detected, use the last known transforms
+            rospy.logdebug("No markers detected, using last known transforms.")
+            for fid_id, last_transform in self.last_known_transforms.items():
+                fiducial_array_msg.transforms.append(last_transform)
+
         self.pose_fid_pub.publish(fiducial_array_msg)
 
 if __name__ == "__main__":
