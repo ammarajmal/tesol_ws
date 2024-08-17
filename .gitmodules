@@ -13,6 +13,6 @@
 [submodule "src/cv_camera"]
 	path = src/cv_camera
 	url = https://github.com/ammarajmal/cv_camera.git
-[submodule "src/charuco_calibration_copter"]
-	path = src/charuco_calibration_copter
+[submodule "src/charuco_calibration"]
+	path = src/charuco_calibration
 	url = https://github.com/ammarajmal/charuco_calibration_copter.git
