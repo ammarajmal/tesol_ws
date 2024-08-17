@@ -1,15 +1,15 @@
-image_width: 640
-image_height: 480
+image_width: 1080
+image_height: 720
 camera_name: sony_cam3
 camera_matrix:
   rows: 3
   cols: 3
-  data: [29090.91, 0, 320, 0, 32727.27, 240, 0, 0, 1]
+  data: [12350.76879566484, 0, 638.3407912518174, 0, 14885.88010948939, 491.4933250049079, 0, 0, 1]
 distortion_model: plumb_bob
 distortion_coefficients:
   rows: 1
   cols: 5
-  data: [1.121043378950134, -0.02642150431494738, 0.002277359505949104, 0.01200219562951199, 0]
+  data: [10.24397645021523, -3286.591454175232, 0.2662614354787126, -0.07527689348786934, 0]
 rectification_matrix:
   rows: 3
   cols: 3
@@ -17,4 +17,4 @@ rectification_matrix:
 projection_matrix:
   rows: 3
   cols: 4
-  data: [29090.91, 0, 320, 0, 0, 32727.27, 240, 0, 0, 0, 1, 0]
+  data: [12540.6044921875, 0, 633.8299971124652, 0, 0, 14980.8857421875, 504.0197950530928, 0, 0, 0, 1, 0]
