@@ -143,6 +143,14 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/tesol_detect" TYPE FILE FILES "/home/tesol/tesol_ws/src/tesol_detect/package.xml")
 endif()
 
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/tesol_detect" TYPE PROGRAM FILES "/home/tesol/tesol_ws/src/tesol_detect/scripts/nodelet_april.py")
+endif()
+
+if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/tesol_detect" TYPE DIRECTORY FILES "/home/tesol/tesol_ws/src/tesol_detect/launch")
+endif()
+
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/home/tesol/tesol_ws/build/tesol_detect/gtest/cmake_install.cmake")
