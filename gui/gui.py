@@ -87,10 +87,10 @@ class NodeGUI(ctk.CTk):
         self.sq_size_var = tk.StringVar(self, self.square_size)
         self.board_size_var = tk.StringVar(self, self.board_size)
 
-        self.marker_dim = '0.020' # ARUCO marker dimension in meters
-        self.marker_dict = "DICT_7X7_1000" #  ARUCO marker dictionary (DICT_7X7_1000)
-        self.marker_dim_var = tk.StringVar(self, self.marker_dim)
-        self.marker_dict_var = tk.StringVar(self, self.marker_dict)
+        self.tag_size = '0.020' # Dimension in meters for AprilTag
+        self.tag_family = "tag36h11" #  AprilTag family
+        self.tag_size_var = tk.StringVar(self, self.tag_size)
+        self.tag_family_var = tk.StringVar(self, self.tag_family)
 
         self.cam_pkg = 'sony_cam'
         self.detect_pkg = 'tesol_detect'
@@ -101,7 +101,7 @@ class NodeGUI(ctk.CTk):
             self.cam_launch_file = f'{self.cam_launch_path}use_cam.launch'
             self.cam_view_launch_file = f'{self.cam_launch_path}use_viewcam.launch'
             self.cam_calib_launch_file = f'{self.cam_launch_path}calib.launch'
-            self.detect_launch_file = f'{self.detect_launch_path}use_tesol.launch'
+            self.detect_launch_file = f'{self.detect_launch_path}use_tesol_april.launch'
         except rospkg.common.ResourceNotFound:
             print('ROS packages not found')
             self.cam_launch_file = None
@@ -655,9 +655,9 @@ class NodeGUI(ctk.CTk):
         '''Update the ARUCO parameters'''
         self.aruco_label = ctk.CTkLabel(self.middle_first_bottom_frame, text='DETECTION PARAMETERS')
         self.aruco_marker_dim_label = ctk.CTkLabel(self.middle_first_bottom_frame, text='Marker Size (m):')
-        self.aruco_marker_dim_entry = ctk.CTkEntry(self.middle_first_bottom_frame, textvariable=self.marker_dim_var)
+        self.aruco_marker_dim_entry = ctk.CTkEntry(self.middle_first_bottom_frame, textvariable=self.tag_size_var)
         self.aruco_marker_dict_label = ctk.CTkLabel(self.middle_first_bottom_frame, text='Marker Dictionary:')
-        self.aruco_marker_dict_entry = ctk.CTkEntry(self.middle_first_bottom_frame, textvariable=self.marker_dict_var)
+        self.aruco_marker_dict_entry = ctk.CTkEntry(self.middle_first_bottom_frame, textvariable=self.tag_family_var)
         self.aruco_update_btn = ctk.CTkButton(self.middle_first_bottom_frame, text='UPDATE', command=self.update_aruco_params)
         self.aruco_label.place(relx=0.5, rely=0.1, anchor='n')
         self.aruco_marker_dim_label.place(relx=0.1, rely=0.3)
@@ -667,9 +667,9 @@ class NodeGUI(ctk.CTk):
         self.aruco_update_btn.place(relx=0.5, rely=0.7, anchor='n')
     def update_aruco_params(self):
         ''' Updates the ARUCO parameters '''
-        self.marker_dim = self.aruco_marker_dim_entry.get()
-        self.marker_dict = self.aruco_marker_dict_entry.get()
-        print(f'Marker Dimension: {self.marker_dim}, Marker Dictionary: {self.marker_dict}')
+        self.tag_size = self.aruco_marker_dim_entry.get()
+        self.tag_family = self.aruco_marker_dict_entry.get()
+        print(f'Marker Dimension: {self.tag_size}, Marker Dictionary: {self.tag_family}')
         self.aruco_update_btn.configure(text='UPDATED', fg_color='green')
     def on_closing(self):
         ''' Stops all the processes and closes the GUI '''
@@ -832,13 +832,13 @@ class NodeGUI(ctk.CTk):
                     self._ui_start_cam_btn(cam_num, "RUNNING")
     def start_detect_process(self, cam_num):
         ''' Starts the detection process '''
-        self.marker_dict = self.marker_dict_var.get()
-        self.marker_dim = self.marker_dim_var.get()
+        self.tag_family = self.tag_family_var.get()
+        self.tag_size = self.tag_size_var.get()
         detect_launch_args = [
             f'{self.detect_launch_file}',
             f'launch_nuc:=sony_cam{cam_num}',
-            f'dictionary:={self.marker_dict}',
-            f'fiducial_len:={self.marker_dim}']
+            f'tag_family:={self.tag_family}',
+            f'tag_size:={self.tag_size}']
         detect_roslaunch_file = [(
             roslaunch.rlutil.resolve_launch_arguments(detect_launch_args)[0],
             detect_launch_args[1:])]

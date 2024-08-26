@@ -1,0 +1,35 @@
+<launch>
+    <!-- Define arguments with default values -->
+    <arg name="launch_nuc" default="sony_cam1" />
+    <arg name="tag_family" default="tag36h11"/>
+    <arg name="tag_size" default="0.02"/>
+    <arg name="visualize" default="true"/>
+
+    <!-- Conditionally include the launch file based on the value of launch_nuc -->
+    <group if="$(eval launch_nuc == 'sony_cam1')">
+        <include file="$(find tesol_detect)/launch/tesol_april.launch">
+            <arg name="camera_name" value="$(arg launch_nuc)" />
+            <arg name="tag_family" value="$(arg tag_family)" />
+            <arg name="tag_size" value="$(arg tag_size)" />
+            <arg name="visualize" value="$(arg visualize)" />
+        </include>
+    </group>
+
+    <group if="$(eval launch_nuc == 'sony_cam2')">
+        <include file="$(find tesol_detect)/launch/tesol_april.launch">
+            <arg name="camera_name" value="$(arg launch_nuc)" />
+            <arg name="tag_family" value="$(arg tag_family)" />
+            <arg name="tag_size" value="$(arg tag_size)" />
+            <arg name="visualize" value="$(arg visualize)" />
+        </include>
+    </group>
+
+    <group if="$(eval launch_nuc == 'sony_cam3')">
+        <include file="$(find tesol_detect)/launch/tesol_april.launch">
+            <arg name="camera_name" value="$(arg launch_nuc)" />
+            <arg name="tag_family" value="$(arg tag_family)" />
+            <arg name="tag_size" value="$(arg tag_size)" />
+            <arg name="visualize" value="$(arg visualize)" />
+        </include>
+    </group>
+</launch>
