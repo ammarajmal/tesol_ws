@@ -14,7 +14,7 @@ class AprilTagDetector:
         self.node_name = rospy.get_name()
 
         # ROS parameters
-        self.camera_name = rospy.get_param("~camera_name", "sony_cam3")
+        self.camera_name = rospy.get_param("~camera_name", "sony_cam1")
         self.tag_family = rospy.get_param("~tag_family", "tag36h11")
         self.tag_size = rospy.get_param("~tag_size", 0.020)
         self.visualize = rospy.get_param("~visualize", True)
