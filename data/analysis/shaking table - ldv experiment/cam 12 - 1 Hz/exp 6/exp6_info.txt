@@ -1,0 +1,7 @@
+Distance from the camera
+cam 1; 1.955m 
+cam 2: 1.592m
+
+Distance from the ground: height
+cam1: 1.157m
+cam2: 0.888m
