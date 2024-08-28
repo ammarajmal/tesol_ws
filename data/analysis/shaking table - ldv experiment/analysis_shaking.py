@@ -1,40 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# import pandas as pd
-# import numpy as np
-# import matplotlib.pyplot as plt
-# from scipy.signal import butter, filtfilt, resample, welch
-
-# # Experiment No. 1: Shaking Table - LDV Experiment
-# exp = 1
-# camera_data_path = "data_Exp1_10s_2024-08-28_22-16-02.csv"
-# ldv_data_path = "protocol_optoNCDT-ILD1420_2024-08-28_22-16-03.684.csv"
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import butter, filtfilt, resample, welch
 
-# Experiment No. 2: Shaking Table - LDV Experiment
-exp = 2
-camera_data_path = "data_Exp1_10s_2024-08-29_01-40-21.csv"
-ldv_data_path = "protocol_optoNCDT-ILD1420_2024-08-29_01-40-21.309.csv"
+# Experiment No. 1: Shaking Table - LDV Experiment
+exp = 4
+camera_data_path = "data_Exp1_10s_2024-08-29_02-23-02.csv"
+ldv_data_path = "protocol_optoNCDT-ILD1420_2024-08-29_02-23-02.836.csv"
+val = 42
+
 
 cam = pd.read_csv(camera_data_path)
 ldv = pd.read_csv(ldv_data_path, skiprows=6, delimiter=';')
 
 # LDV data
 ldv.columns = ['acquisition_time', 'epoch_time_ms', 'distance_mm']  # Rename the columns
-print(ldv.head())
-# Remove commas from the epoch_time_ms column and convert to numeric
-ldv['epoch_time_ms'] = ldv['epoch_time_ms'].str.replace(',', '').astype(float)
-print(ldv.head())
-# Drop any rows with missing values
-ldv = ldv.dropna(subset=['epoch_time_ms', 'distance_mm'])
-
-# Convert epoch_time_ms to seconds
-ldv['epoch_time'] = ldv['epoch_time_ms'] / 1000
+ldv['epoch_time_ms'] = pd.to_numeric(ldv['epoch_time_ms'], errors='coerce')  # Convert epoch_time_ms to numeric
+ldv = ldv.dropna(subset=['epoch_time_ms', 'distance_mm'])  # Drop any rows with missing values
+ldv['epoch_time'] = ldv['epoch_time_ms'] / 1000  # Convert to seconds
 
 # Calculate the original sampling frequency
 ldv_sampling_frequency = 1 / np.mean(np.diff(ldv['epoch_time']))
@@ -43,31 +29,25 @@ print("Original sampling frequency:", ldv_sampling_frequency)
 # Set the new sampling frequency
 ldv_new_sampling_frequency = 60
 
-# Check if data length is sufficient for filtering
-if len(ldv['distance_mm']) > 18:  # Ensure there are more data points than the pad length
-    # Butterworth filter
-    b, a = butter(5, 20/500, btype='low')
-    ldvf = filtfilt(b, a, ldv['distance_mm'].ravel())  # Filter the data
+# Butterworth filter
+b, a = butter(5, 20/500, btype='low')
+ldvf = filtfilt(b, a, ldv['distance_mm'].ravel())  # Filter the data
 
-    # Calculate the number of samples for the new sampling frequency
-    num_original_samples = len(ldvf)
-    num_new_samples = int(num_original_samples * ldv_new_sampling_frequency / ldv_sampling_frequency)
-    print("Number of samples after downsampling:", num_new_samples)
+# Calculate the number of samples for the new sampling frequency
+num_original_samples = len(ldvf)
+num_new_samples = int(num_original_samples * ldv_new_sampling_frequency / ldv_sampling_frequency)
+print("Number of samples after downsampling:", num_new_samples)
 
-    # Resample the data to the new sampling frequency
-    ldvd = resample(ldvf, num_new_samples)
+# Resample the data to the new sampling frequency
+ldvd = resample(ldvf, num_new_samples)
 
-    # Create a new time axis for the resampled data
-    resampled_time = np.linspace(0, len(ldvd) / ldv_new_sampling_frequency, num_new_samples)
+# Create a new time axis for the resampled data
+resampled_time = np.linspace(0, len(ldvd) / ldv_new_sampling_frequency, num_new_samples)
 
-    # Calculate the new sampling frequency for verification
-    ldv_new_sampling_frequency_calculated = 1 / np.mean(np.diff(resampled_time))
-    print("New sampling frequency calculated from resampled data:", ldv_new_sampling_frequency_calculated)
+# Calculate the new sampling frequency for verification
+ldv_new_sampling_frequency_calculated = 1 / np.mean(np.diff(resampled_time))
+print("New sampling frequency calculated from resampled data:", ldv_new_sampling_frequency_calculated)
 
-    # The rest of your code continues here...
-
-else:
-    print("Data length is insufficient for filtering. Skipping filtering step.")
 # # Plotting (Optional)
 # plt.figure(1)
 # plt.plot(resampled_time, ldvd)
@@ -90,7 +70,7 @@ datau = np.interp(time_new, time, data)
 
 # Resample the camera data to 60 Hz
 cam_resampled = resample(datau, 60 * len(datau)//1000)
-cam_resampled = cam_resampled[43:]
+cam_resampled = cam_resampled[val:]
 
 # Time vector for resampled data
 time_resampled = np.linspace(0, len(cam_resampled) / 60, len(cam_resampled))
