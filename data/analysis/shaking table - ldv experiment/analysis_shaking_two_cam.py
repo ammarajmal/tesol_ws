@@ -120,9 +120,9 @@ f_cam2, Pcam2 = welch(camd['Cam2 Position Y'], fs=60, nperseg=Nfft//2, noverlap=
 
 # Plotting the FFT
 plt.figure(4)
-plt.semilogy(f_ldv, Pldv, label='LDV Data')
-plt.semilogy(f_cam, Pcam, label='Camera Data 1')
-plt.semilogy(f_cam2, Pcam2, label='Camera Data 2')
+plt.plot(f_ldv, Pldv, label='LDV Data')
+plt.plot(f_cam, Pcam, label='Camera Data 1')
+plt.plot(f_cam2, Pcam2, label='Camera Data 2')
 plt.title(f'FFT of LDV and Camera Data (Experiment {exp})')
 plt.xlabel('Frequency (Hz)')
 plt.ylabel('Power Spectral Density')
