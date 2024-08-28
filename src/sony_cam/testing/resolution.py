@@ -1,4 +1,4 @@
-#!/bin/usr/env python3
+#!/usr/bin/env python3
 """
 file to subscribe the camera /sony_cam3/image_raw and publish the resolution of the image"""
 
@@ -15,7 +15,7 @@ def callback(data):
     
 def resolution():
     rospy.init_node('resolution', anonymous=True)
-    rospy.Subscriber('/sony_cam3/image_raw', Image, callback)
+    rospy.Subscriber('/sony_cam1/image_raw', Image, callback)
     rospy.spin()
     
 if __name__ == '__main__':

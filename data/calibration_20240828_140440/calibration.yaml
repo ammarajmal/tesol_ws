@@ -2,7 +2,7 @@
 image_width: 640
 image_height: 480
 distortion_model: rational_polynomial
-camera_name: sony_cam1
+camera_name: camera
 camera_matrix:
   rows: 3
   cols: 3

@@ -19,6 +19,7 @@ class MyDetector:
         self.aruco_marker_size = rospy.get_param("~fiducial_len", 0.020)
         self.visualize = rospy.get_param("~visualize", True)
         self.corner_refine_criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 20, 0.001)
+        
         # Subscribers and publishers
         self.image_sub = rospy.Subscriber(f"/{self.camera_name}/image_raw", Image, self.image_callback)
         self.camera_info_sub = rospy.Subscriber(f"/{self.camera_name}/camera_info", CameraInfo, self.camera_info_callback)
@@ -28,11 +29,15 @@ class MyDetector:
         self.parameters = aruco.DetectorParameters_create()
         self.camera_matrix = None
         self.dist_coeffs = None
-        self.initial_rotation_mats = []
-        self.initial_rotation_frames = 10
-        self.initial_rotation_mat = None  # To store the initial rotation matrix for conversion of pose from camera to marker frame
+        
+        # For initial stabilization
+        self.initial_rotation_matrices = []
+        self.initial_translation_vectors = []
+        self.stabilization_frames = 20  # Number of frames to average for stabilization
+        self.initial_rotation_matrix = None
+        self.initial_translation_vector = None
+        
         self.last_known_transforms = {}  # To store the last known transforms for each marker ID
-
 
         rospy.loginfo("Aruco detector node is now running")
 
@@ -62,14 +67,12 @@ class MyDetector:
     def process_img_msg(self, msg):
         """ Process the image message to detect aruco markers """
         input_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
-        # input_image = cv2.resize(input_image, (640, 480))  # Example resizing for faster processing
         gray = cv2.cvtColor(input_image, cv2.COLOR_BGR2GRAY)
         gray = cv2.GaussianBlur(gray, (5, 5), 0)
         corners, ids, _ = aruco.detectMarkers(gray, self.aruco_dict, parameters=self.parameters)
-        # corners, ids, _ = aruco.detectMarkers(gray, self.aruco_dict)
         
         if ids is not None:
-            # # Refine the corner locations
+            # Refine the corner locations
             for corner in corners:
                 cv2.cornerSubPix(gray, corner, winSize=(10, 10), zeroZone=(-1, -1), criteria=self.corner_refine_criteria)
             
@@ -98,32 +101,25 @@ class MyDetector:
             for i, fid_id in enumerate(ids):
                 rotation_mat, _ = cv2.Rodrigues(rvecs[i])
 
-                if self.initial_rotation_mat is None:
-                    self.initial_rotation_mat = rotation_mat
+                if len(self.initial_rotation_matrices) < self.stabilization_frames:
+                    # Accumulate initial rotation matrices and translation vectors
+                    self.initial_rotation_matrices.append(rotation_mat)
+                    self.initial_translation_vectors.append(tvecs[i])
 
-                inv_rotation_mat = np.linalg.inv(self.initial_rotation_mat)
-                inv_tvec = -inv_rotation_mat.dot(tvecs[i].T)
+                if len(self.initial_rotation_matrices) == self.stabilization_frames:
+                    # Compute the average rotation matrix and translation vector
+                    self.initial_rotation_matrix = self.average_rotation_matrices(self.initial_rotation_matrices)
+                    self.initial_translation_vector = np.mean(self.initial_translation_vectors, axis=0)
 
+                if self.initial_rotation_matrix is not None:
+                    transform = self.compute_fiducial_transform(int(fid_id), rotation_mat, tvecs[i])
+                    fiducial_array_msg.transforms.append(transform)
+                    
+                    # Update the last known transform
+                    self.last_known_transforms[int(fid_id)] = transform
 
-                transform = FiducialTransform()
-                transform.fiducial_id = int(fid_id)
-                transform.transform.translation.x = inv_tvec[0]
-                transform.transform.translation.y = inv_tvec[1]
-                transform.transform.translation.z = inv_tvec[2]
-                r = R.from_matrix(inv_rotation_mat)
-                quat = r.as_quat()
-                transform.transform.rotation.x = quat[0]
-                transform.transform.rotation.y = quat[1]
-                transform.transform.rotation.z = quat[2]
-                transform.transform.rotation.w = quat[3]
-
-                fiducial_array_msg.transforms.append(transform)
-                
-                # Update the last known transform
-                self.last_known_transforms[int(fid_id)] = transform
-
-                if self.visualize:
-                    aruco.drawAxis(image, self.camera_matrix, self.dist_coeffs, rvecs[i], tvecs[i], self.aruco_marker_size/2)
+                    if self.visualize:
+                        aruco.drawAxis(image, self.camera_matrix, self.dist_coeffs, rvecs[i], tvecs[i], self.aruco_marker_size/2)
         else:
             # If no markers are detected, use the last known transforms
             rospy.logdebug("No markers detected, using last known transforms.")
@@ -131,6 +127,38 @@ class MyDetector:
                 fiducial_array_msg.transforms.append(last_transform)
 
         self.pose_fid_pub.publish(fiducial_array_msg)
+
+    def average_rotation_matrices(self, rotation_matrices):
+        """ Averages a list of rotation matrices using quaternions """
+        quaternions = [R.from_matrix(mat).as_quat() for mat in rotation_matrices]
+        avg_quat = np.mean(quaternions, axis=0)
+        avg_quat /= np.linalg.norm(avg_quat)  # Normalize the quaternion
+        return R.from_quat(avg_quat).as_matrix()
+
+    def compute_fiducial_transform(self, fiducial_id, rotation_mat, tvec):
+        """ Computes the fiducial transform relative to the initial average pose """
+        # Ensure tvec and initial_translation_vector are column vectors
+        tvec = tvec.reshape(3, 1)
+        self.initial_translation_vector = self.initial_translation_vector.reshape(3, 1)
+        
+        # Compute the relative rotation and translation
+        relative_rotation_mat = np.dot(np.linalg.inv(self.initial_rotation_matrix), rotation_mat)
+        relative_translation = np.dot(np.linalg.inv(self.initial_rotation_matrix), (tvec - self.initial_translation_vector))
+
+        r_relative = R.from_matrix(relative_rotation_mat)
+        quat_relative = r_relative.as_quat()
+
+        transform = FiducialTransform()
+        transform.fiducial_id = fiducial_id
+        transform.transform.translation.x = relative_translation[0]
+        transform.transform.translation.y = relative_translation[1]
+        transform.transform.translation.z = relative_translation[2]
+        transform.transform.rotation.x = quat_relative[0]
+        transform.transform.rotation.y = quat_relative[1]
+        transform.transform.rotation.z = quat_relative[2]
+        transform.transform.rotation.w = quat_relative[3]
+
+        return transform
 
 if __name__ == "__main__":
     try:

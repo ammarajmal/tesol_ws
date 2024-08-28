@@ -60,14 +60,16 @@ class NodeGUI(ctk.CTk):
         self.exp_name_var = tk.StringVar(self, self.experiment_name)
         self.exp_dur_var = tk.StringVar(self, self.experiment_dur)
     
-        # self.image_width = '640'
-        # self.image_height = '480'
+        self.image_width = '640'
+        self.image_height = '480'
         # self.image_height = '1080'
         # self.image_width = '1920'
         
-        self.image_width = '1280'
-        self.image_height = '720'
+        # self.image_width = '1280'
+        # self.image_height = '720'
         
+        # self.image_width = '854'
+        # self.image_height = '480'
         
         self.camera_resolution = self.image_width + 'x' + self.image_height
         self.camera_fps = '60'
