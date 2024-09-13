@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 from scipy.signal import butter, filtfilt, resample, welch
 
 # Experiment No. 1: Shaking Table - LDV Experiment
-exp = 4
-camera_data_path = "data_Exp1_10s_2024-08-29_02-23-02.csv"
-ldv_data_path = "protocol_optoNCDT-ILD1420_2024-08-29_02-23-02.836.csv"
+exp = 1
+camera_data_path = "data_Exp1_10s_2024-09-13_00-09-34.csv"
+ldv_data_path = "protocol_optoNCDT-ILD1420_2024-09-13_00-09-35.146.csv"
 val = 42
 
 
