@@ -7,10 +7,10 @@ import matplotlib.pyplot as plt
 from scipy.signal import butter, filtfilt, resample, welch
 
 # Experiment No. 1: Shaking Table - LDV Experiment
-exp = 1
-camera_data_path = "data_Exp1_10s_2024-09-14_02-16-47.csv"
-ldv_data_path = "protocol_optoNCDT-ILD1420_2024-09-14_02-16-47.647.csv"
-val = 42
+exp = 9
+camera_data_path = "data_Exp1_10s_2024-08-29_04-53-01.csv"
+ldv_data_path = "protocol_optoNCDT-ILD1420_2024-08-29_04-53-01.883.csv"
+val = 0
 
 
 cam = pd.read_csv(camera_data_path)
@@ -61,20 +61,24 @@ print("New sampling frequency calculated from resampled data:", ldv_new_sampling
 # Cam Interpolation
 # now save time axes from the camera data into the time header 'Time (s)'
 time = cam['Time (s)'] - cam['Time (s)'].iloc[0]
-data = cam['Cam1 Position Y']
+data = cam[['Cam1 Position Y', 'Cam2 Position Y']].values
 
 # Interpolate the camera data to 1 KHz from the original sampling frequency of 60 Hz
 time_new = np.arange(0, time.iloc[-1], 1e-3)
-datau = np.zeros(len(time_new))
-datau = np.interp(time_new, time, data)
+datau = np.zeros((len(time_new), 2))
+for i in range(2):
+    datau[:, i] = np.interp(time_new, time, data[:, i])
+
 
 # Resample the camera data to 60 Hz
 cam_resampled = resample(datau, 60 * len(datau)//1000)
 cam_resampled = cam_resampled[val:]
 
+
 # Time vector for resampled data
 time_resampled = np.linspace(0, len(cam_resampled) / 60, len(cam_resampled))
-camd = pd.DataFrame({'Time (s)': time_resampled, 'Cam1 Position Y': cam_resampled*1e3})
+camd = pd.DataFrame({'Time (s)': time_resampled, 'Cam1 Position Y': cam_resampled[:, 0]*1e3, 'Cam2 Position Y': cam_resampled[:, 1]*1e3})
+
 
 # Trim the LDV data to match the length of the camera data
 ldvd = ldvd[:len(camd)]
@@ -97,12 +101,13 @@ resampled_time = resampled_time[:len(camd)]
 plt.figure(3)
 plt.plot(resampled_time, ldvd)
 plt.plot(resampled_time, camd['Cam1 Position Y'])
+plt.plot(resampled_time, camd['Cam2 Position Y'])
 plt.title(f'LDV and Camera Data Comparison (Experiment {exp})')
 plt.xlabel('Time (s)')
 plt.ylabel('Amplitude')
 plt.grid(True, which='both', linestyle='--')
 plt.minorticks_on()  # Enable minor ticks to increase the grid density
-plt.legend(['LDV Data', 'Camera Data'])
+plt.legend(['LDV Data', 'Camera Data 1', 'Camera Data 2'])
 plt.savefig(f'_LDV_camera_data_comparison - Exp {exp}.png')
 # plt.show()
 
@@ -111,15 +116,18 @@ plt.savefig(f'_LDV_camera_data_comparison - Exp {exp}.png')
 Nfft = 2**11
 f_ldv, Pldv = welch(ldvd, fs=ldv_new_sampling_frequency, nperseg=Nfft//2, noverlap=Nfft//4, nfft=Nfft)
 f_cam, Pcam = welch(camd['Cam1 Position Y'], fs=60, nperseg=Nfft//2, noverlap=Nfft//4, nfft=Nfft)
+f_cam2, Pcam2 = welch(camd['Cam2 Position Y'], fs=60, nperseg=Nfft//2, noverlap=Nfft//4, nfft=Nfft)
 
 # Plotting the FFT
 plt.figure(4)
-plt.semilogy(f_ldv, Pldv)
-plt.semilogy(f_cam, Pcam)
+plt.plot(f_ldv, Pldv, label='LDV Data')
+plt.plot(f_cam, Pcam, label='Camera Data 1')
+plt.plot(f_cam2, Pcam2, label='Camera Data 2')
 plt.title(f'FFT of LDV and Camera Data (Experiment {exp})')
 plt.xlabel('Frequency (Hz)')
 plt.ylabel('Power Spectral Density')
 plt.grid(True, which='both', linestyle='--')
-plt.legend(['LDV Data', 'Camera Data'])
+plt.legend()
 plt.savefig(f'_FFT_LDV_camera_data - Exp {exp}.png')
 plt.show()
+
