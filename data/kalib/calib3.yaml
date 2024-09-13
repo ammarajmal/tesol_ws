@@ -2,15 +2,15 @@
 image_width: 640
 image_height: 480
 distortion_model: rational_polynomial
-camera_name: sony_cam3
+camera_name: camera
 camera_matrix:
   rows: 3
   cols: 3
-  data: [ 8596.91, 0, 319.032, 0, 12039.5, 238.18, 0, 0, 1, ]
+  data: [ 9877.09, 0, 317.812, 0, 11537.5, 239.569, 0, 0, 1, ]
 distortion_coefficients:
   rows: 1
   cols: 14
-  data: [ 0.550582, -0.0487309, 0.152113, -0.0237809, -5.06282e-05, -0.563377, 0.0487925, 5.06838e-05, 0, 0, 0, 0, 0, 0, ]
+  data: [ 0.137786, -0.0376974, -0.168165, -0.0799409, -5.61362e-05, -0.155226, 0.0377134, 5.61538e-05, 0, 0, 0, 0, 0, 0, ]
 rectification_matrix:
   rows: 3
   cols: 3
@@ -18,4 +18,4 @@ rectification_matrix:
 projection_matrix:
   rows: 3
   cols: 4
-  data: [ 8596.91, 0, 319.032, 0, 0, 12039.5, 238.18, 0, 0, 0, 1, 0, ]
+  data: [ 9877.09, 0, 317.812, 0, 0, 11537.5, 239.569, 0, 0, 0, 1, 0, ]
