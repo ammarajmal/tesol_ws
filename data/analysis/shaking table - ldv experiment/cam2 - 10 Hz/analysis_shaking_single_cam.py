@@ -1,14 +1,19 @@
-# Importing the necessary libraries
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import butter, filtfilt, resample, welch
 
-# Define file paths
-camera_data_path = "data_Exp1_10s_2024-09-14_05-05-08.csv"
-ldv_data_path = "protocol_optoNCDT-ILD1420_2024-09-14_05-05-08.710.csv"
+# Experiment No. 1: Shaking Table - LDV Experiment
 exp = 1
-val = 41
+freq_ = 10
+camera_ = 2
+camera_data_path = "data_Exp1_10s_2024-09-14_05-43-02.csv"
+ldv_data_path = "protocol_optoNCDT-ILD1420_2024-09-14_05-43-03.292.csv"
+val = 34
+
 
 # Load camera data
 cam = pd.read_csv(camera_data_path)
@@ -75,40 +80,59 @@ camd = pd.DataFrame({'Time (s)': time_resampled, 'Cam2 Position Y': cam_resample
 ldvd = ldvd[:len(camd)]
 resampled_time = resampled_time[:len(camd)]
 
+
 # *** Trim the data to only include the first 2 seconds ***
-two_seconds_idx = np.where(resampled_time <= 2)[0]
-ldvd_2s = ldvd[two_seconds_idx]
-camd_2s = camd.iloc[two_seconds_idx]
-resampled_time_2s = resampled_time[two_seconds_idx]
+set_seconds_idx = np.where(resampled_time <= 2.5)[0]
+ldvd = ldvd[set_seconds_idx]
+camd = camd.iloc[set_seconds_idx]
+resampled_time = resampled_time[set_seconds_idx]
 
 # Find the maximum and minimum values for LDV and Camera data within 2 seconds
-max_ldv = ldvd_2s.max()
-min_ldv = ldvd_2s.min()
-max_cam = camd_2s['Cam2 Position Y'].max()
-min_cam = camd_2s['Cam2 Position Y'].min()
+max_ldv = ldvd.max()
+min_ldv = ldvd.min()
+max_cam = camd['Cam2 Position Y'].max()
+min_cam = camd['Cam2 Position Y'].min()
 
 # Compute the difference between the max and min of LDV and Camera data
 max_diff_signal = abs(max_ldv - max_cam)
 min_diff_signal = abs(min_ldv - min_cam)
 
-# Plot for the LDV and Camera data comparison (time domain, 2 seconds)
-plt.figure(1)
-plt.plot(resampled_time_2s, ldvd_2s, label=f'LDV Data (Max: {max_ldv:.2f}, Min: {min_ldv:.2f})')
-plt.plot(resampled_time_2s, camd_2s['Cam2 Position Y'], label=f'Camera Data (Max: {max_cam:.2f}, Min: {min_cam:.2f})')
 
-# Add plot details
-plt.title(f'LDV and Camera Data Comparison (2 Seconds, Experiment {exp})')
+
+# Plot for the LDV and Camera data comparison
+plt.figure(1)
+plt.plot(resampled_time, ldvd, label=f'LDV Data (Max: {max_ldv:.2f}, Min: {min_ldv:.2f})')
+plt.plot(resampled_time, camd['Cam2 Position Y'], label=f'Camera Data (Max: {max_cam:.2f}, Min: {min_cam:.2f})')
+plt.title(f'LDV and Camera Data Comparison - Cam {camera_}, Freq: {freq_} Hz')
 plt.xlabel('Time (s)')
 plt.ylabel('Amplitude')
 plt.grid(True, which='both', linestyle='--')
 plt.minorticks_on()  # Enable minor ticks to increase the grid density
 plt.legend(loc='lower left')
-
+plt.savefig(f'_LDV_camera_data_comparison_cam{camera_}_{freq_}Hz.png')
 # Display the difference of max and min values on the plot using text
 plt.text(0.05, 0.96, f'Difference in Max: {max_diff_signal:.2f}, Difference in Min: {min_diff_signal:.2f}', transform=plt.gca().transAxes, color='red')
 
-# Save the time-domain plot to a file
-plt.savefig(f'_LDV_camera_comparison_with_extrema_2s - Exp {exp}.png')
+# plt.show()
 
-# Show the time-domain plot
+
+# FFT 
+Nfft = 2**8
+f_ldv, Pldv = welch(ldvd, fs=ldv_new_sampling_frequency, nperseg=Nfft//2, noverlap=Nfft//4, nfft=Nfft)
+f_cam, Pcam = welch(camd['Cam2 Position Y'], fs=60, nperseg=Nfft//2, noverlap=Nfft//4, nfft=Nfft)
+
+# Find the maximum frequency components for LDV and Camera data
+max_freq_ldv = f_ldv[np.argmax(Pldv)]
+max_freq_cam = f_cam[np.argmax(Pcam)]
+
+# Plotting the FFT
+plt.figure(2)
+plt.semilogy(f_ldv, Pldv, label=f'LDV Data (Max Frequency: {max_freq_ldv:.2f} Hz)')
+plt.semilogy(f_cam, Pcam, label=f'Camera Data (Max Frequency: {max_freq_cam:.2f} Hz)')
+plt.title(f'FFT of LDV and Camera Data - Cam {camera_}, Freq: {freq_} Hz')
+plt.xlabel('Frequency (Hz)')
+plt.ylabel('Power Spectral Density')
+plt.grid(True, which='both', linestyle='--')
+plt.legend(loc='lower left')
+plt.savefig(f'_FFT_LDV_camera_data_cam{camera_}_{freq_}Hz.png')
 plt.show()
