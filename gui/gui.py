@@ -441,7 +441,7 @@ class NodeGUI(ctk.CTk):
             second_cam = cams[1]
             self.sub1 = message_filters.Subscriber(f'/sony_cam{first_cam}/aruco_detect_node/fiducial_transforms', FiducialTransformArray)
             self.sub2 = message_filters.Subscriber(f'/sony_cam{second_cam}/aruco_detect_node/fiducial_transforms', FiducialTransformArray)
-            self.ats = message_filters.ApproximateTimeSynchronizer([self.sub1, self.sub2], 10, 0.1, allow_headerless=True)
+            self.ats = message_filters.ApproximateTimeSynchronizer([self.sub1, self.sub2], 10, 0.01, allow_headerless=True)
             self.ats.registerCallback(self.record_two_cams)
             self.is_data_collection_active = True
             rospy.Timer(rospy.Duration(self.experiment_dur), self.stop_data_collection2, oneshot=True)
