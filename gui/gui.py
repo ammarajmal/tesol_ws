@@ -6,7 +6,7 @@ import datetime
 import tkinter as tk
 import customtkinter as ctk
 import pandas as pd
-# import numpy as np
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 # import subprocess
@@ -573,6 +573,8 @@ class NodeGUI(ctk.CTk):
         data['Time (s)'] = (data['Time (s)'] - start_time)
 
         def plot_axis(ax, x_data, y_data, label, color, linestyle='-'):
+            # Subtract the DC component (mean) from the data
+            y_data = y_data - np.mean(y_data)
             ax.plot(x_data, y_data, label=label, color=color, linestyle=linestyle)
 
         colors = ['red', 'green', 'blue']

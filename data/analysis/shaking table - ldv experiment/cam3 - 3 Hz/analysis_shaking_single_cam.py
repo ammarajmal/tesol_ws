@@ -14,25 +14,24 @@ freq_ = 3
 camera_ = 3
 camera_data_path = "data_Exp1_10s_2024-09-14_06-45-54.csv"
 ldv_data_path = "protocol_optoNCDT-ILD1420_2024-09-14_06-45-55.298.csv"
-val = 42
+val = 44
 
 
 # Load camera data
 cam = pd.read_csv(camera_data_path)
 
 # Load LDV data
-ldv = pd.read_csv(ldv_data_path, skiprows=6, delimiter=';')
+ldv = pd.read_csv(ldv_data_path, skiprows=6, delimiter='\t')
 
 # Strip the leading and trailing spaces from the column names
 ldv.columns = ldv.columns.str.strip()
 
+# Replacing commas with dots for numerical data
+ldv['Epoch time (ms)'] = ldv['Epoch time (ms)'].str.replace(',', '.').astype(float)
+ldv['Distance1 (mm)'] = ldv['Distance1 (mm)'].str.replace(',', '.').astype(float)
+
 # Renaming the columns for easier reference
 ldv.columns = ['acquisition_time', 'epoch_time_ms', 'distance_mm']
-# Replacing commas with dots for numerical data
-ldv['epoch_time_ms'] = ldv['epoch_time_ms'].str.replace(',', '.').astype(float)
-ldv['distance_mm'] = ldv['distance_mm'].str.replace(',', '.').astype(float)
-
-
 
 # LDV data processing
 ldv['epoch_time'] = ldv['epoch_time_ms'] / 1000  # Convert to seconds
@@ -114,7 +113,7 @@ plt.minorticks_on()  # Enable minor ticks to increase the grid density
 plt.legend(loc='lower left')
 plt.savefig(f'_LDV_camera_data_comparison_cam{camera_}_{freq_}Hz.png')
 # Display the difference of max and min values on the plot using text
-plt.text(0.05, 0.96, f'Difference in Max: {max_diff_signal:.2f}, Difference in Min: {min_diff_signal:.2f}', transform=plt.gca().transAxes, color='red')
+plt.text(0.05, 0.96, f'Difference in Max: {max_diff_signal:.3f}, Difference in Min: {min_diff_signal:.3f}', transform=plt.gca().transAxes, color='red')
 
 # plt.show()
 
