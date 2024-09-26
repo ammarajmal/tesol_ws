@@ -341,6 +341,12 @@ class NodeGUI(ctk.CTk):
         ''' Creates the widgets in the center frame in the middle second frame '''
         self.middle_second_center_record_label = ctk.CTkLabel(self.middle_second_center_frame, text='RECORD DATA')
         self.middle_second_center_record_label.place(relx=0.5, rely=0.05, anchor='n')
+        self.middle_second_center_dir_label = ctk.CTkLabel(self.middle_second_center_frame, text='Directory Name: ')
+        self.middle_second_center_dir_label.place(relx=0.09, rely=0.5)
+        self.middle_second_center_dir_var = tk.StringVar(self)
+        self.middle_second_center_dir_entry = ctk.CTkEntry(self.middle_second_center_frame, textvariable=self.middle_second_center_dir_var)
+        self.middle_second_center_dir_entry.place(relx=0.75, rely=0.5, anchor='n', relwidth=0.3)
+
         self.middle_second_center_exp_label = ctk.CTkLabel(self.middle_second_center_frame, text='Experiment Name: ')
         self.middle_second_center_exp_label.place(relx=0.09, rely=0.2)
         self.middle_second_center_exp_entry = ctk.CTkEntry(self.middle_second_center_frame, textvariable=self.exp_name_var)
@@ -358,25 +364,37 @@ class NodeGUI(ctk.CTk):
         self.middle_second_center_recall_button = ctk.CTkButton(self.middle_second_center_frame, text='RECORD ALL', command=self.recall_data)
         self.middle_second_center_recall_button.place(relx=0.5, rely=0.8, anchor='n')
     def record_data_param_update(self):
-        ''' Updates the record data parameters '''
+        ''' Updates the record data parameters and prepares the file path '''
         try:
             self.experiment_dur = int(self.exp_dur_var.get())
         except ValueError:
             print('Invalid Experiment Duration, please input a valid number')
         else:
             self.experiment_name = self.exp_name_var.get()
-            # File name for saving the data
+
+            # Directory name provided by the user
+            directory_name = self.middle_second_center_dir_var.get()
+
+            # Path to the new directory inside ~/Desktop/TESolution
+            base_dir = os.path.expanduser('~/Desktop/TESolution')
+            target_dir = os.path.join(base_dir, directory_name)
+
+            # Check if the directory exists; if not, create it
+            if not os.path.exists(target_dir):
+                os.makedirs(target_dir)
+                print(f'Created new directory at {target_dir}')
+            else:
+                print(f'Directory {target_dir} already exists')
+
+            # Generate file name for saving data
             cur_time = rospy.get_time()
             cur_time = datetime.datetime.fromtimestamp(cur_time).strftime('%Y-%m-%d_%H-%M-%S')
-            cwd = os.getcwd()
-            data_dir = os.path.join(cwd, 'data/pose_data/')
-            
-            # Check if directory exists, if not, create it
-            if not os.path.exists(data_dir):
-                os.makedirs(data_dir)
-            
-            self.file_name = f'data_{self.experiment_name}_{self.experiment_dur}s_{cur_time}.csv'
-            self.file_name = os.path.join(data_dir, self.file_name)
+
+            # Create the full file path including the experiment name and duration
+            self.file_name = f'{self.experiment_name}_{self.experiment_dur}s_{cur_time}.csv'
+            self.file_name = os.path.join(target_dir, self.file_name)
+            print(f'File will be saved to: {self.file_name}')
+
     def check_running_cameras(self):
         # check which of the self.cam1_status, self.cam2_status, self.cam3_status are True and return the camera numbers
         cam_nums = []
@@ -441,6 +459,8 @@ class NodeGUI(ctk.CTk):
             second_cam = cams[1]
             self.sub1 = message_filters.Subscriber(f'/sony_cam{first_cam}/aruco_detect_node/fiducial_transforms', FiducialTransformArray)
             self.sub2 = message_filters.Subscriber(f'/sony_cam{second_cam}/aruco_detect_node/fiducial_transforms', FiducialTransformArray)
+            self.ats = message_filters.TimeSynchronizer([self.sub1, self.sub2], 10)
+
             self.ats = message_filters.ApproximateTimeSynchronizer([self.sub1, self.sub2], 10, 0.01, allow_headerless=True)
             self.ats.registerCallback(self.record_two_cams)
             self.is_data_collection_active = True
@@ -451,7 +471,7 @@ class NodeGUI(ctk.CTk):
             self.sub1 = message_filters.Subscriber(f'/sony_cam{cams[0]}/aruco_detect_node/fiducial_transforms', FiducialTransformArray)
             self.sub2 = message_filters.Subscriber(f'/sony_cam{cams[1]}/aruco_detect_node/fiducial_transforms', FiducialTransformArray)
             self.sub3 = message_filters.Subscriber(f'/sony_cam{cams[2]}/aruco_detect_node/fiducial_transforms', FiducialTransformArray)
-            self.ats = message_filters.ApproximateTimeSynchronizer([self.sub1, self.sub2, self.sub3], 10, 0.1, allow_headerless=True)
+            self.ats = message_filters.ApproximateTimeSynchronizer([self.sub1, self.sub2, self.sub3], 10, 0.01, allow_headerless=True)
             self.ats.registerCallback(self.record_three_cams)
             self.is_data_collection_active = True
             rospy.Timer(rospy.Duration(self.experiment_dur), self.stop_data_collection3, oneshot=True)
@@ -543,11 +563,66 @@ class NodeGUI(ctk.CTk):
         ''' Creates the widgets in the bottom frame in the middle second frame '''
         self.middle_second_bottom_frame_label = ctk.CTkLabel(self.middle_second_bottom_frame, text='PLOT DATA')
         self.middle_second_bottom_frame_label.place(relx=0.5, rely=0.1, anchor='n')
-        self.middle_second_bottom_frame_button = ctk.CTkButton(self.middle_second_bottom_frame, text='PLOT - OVERLAP', command=lambda:self.plot_data(True))
+        self.middle_second_bottom_frame_button = ctk.CTkButton(self.middle_second_bottom_frame, text='PLOT 3 Axis', command=lambda:self.plot_data(True))
         self.middle_second_bottom_frame_button.place(relx=0.5, rely=0.5, anchor='n')
-        self.middle_second_bottom_frame_button = ctk.CTkButton(self.middle_second_bottom_frame, text='PLOT - SEPARATE', command=lambda:self.plot_data(False))
-        self.middle_second_bottom_frame_button.place(relx=0.5, rely=0.8, anchor='n')
+        self.middle_second_bottom_frame_button_ind_axis = ctk.CTkButton(self.middle_second_bottom_frame, text='PLOT y-axis', command=lambda:self.plot_ind_axis('Y'))
+        self.middle_second_bottom_frame_button_ind_axis.place(relx=0.5, rely=0.8, anchor='n')
 
+    def plot_ind_axis(self, axis='Y'):
+        ''' Plots time and frequency domain data for the selected axis (default: Y-axis) '''
+        print('Plotting individual axis:', axis)
+
+        # Ensure file exists
+        if not self.file_name:
+            print("No file available for plotting.")
+            return
+
+        # Load the recently saved CSV file
+        data = pd.read_csv(self.file_name)
+
+        # Determine which cameras have valid data for the selected axis
+        available_cameras = []
+        for cam_num in range(1, 4):
+            col_name = f'Cam{cam_num} Position {axis}'
+            if col_name in data.columns and not data[col_name].empty:
+                available_cameras.append(cam_num)
+
+        if not available_cameras:
+            print(f"No camera data available for {axis}-axis.")
+            return
+
+        # Extract time and camera data for the selected axis
+        time = data['Time (s)'] - data['Time (s)'].iloc[0]
+        camera_data = data[[f'Cam{cam_num} Position {axis}' for cam_num in available_cameras]].values
+        camera_data_dc_removed = camera_data - np.mean(camera_data, axis=0)
+
+        # Time-domain plot
+        plt.figure(figsize=(12, 6))
+        for i, cam_num in enumerate(available_cameras):
+            plt.plot(time, camera_data_dc_removed[:, i], label=f'Cam{cam_num} Position {axis}')
+        plt.title(f'{axis} Axis Displacement Over Time')
+        plt.xlabel('Time (s)')
+        plt.ylabel(f'Displacement ({axis}) [mm]')
+        plt.grid(True, which='both', linestyle='--')
+        plt.legend(loc='best')
+        plt.savefig(self.file_name.replace('.csv', f'_{axis}_axis_time_plot.png'))
+        plt.show()
+
+        # Frequency-domain (FFT) using Welch's method
+        Nfft = 2**11
+        plt.figure(figsize=(12, 6))
+        for i, cam_num in enumerate(available_cameras):
+            f, Pxx = welch(camera_data_dc_removed[:, i], fs=60, nperseg=Nfft//2, noverlap=Nfft//4, nfft=Nfft)
+            plt.semilogy(f, Pxx, label=f'Cam{cam_num} Position {axis}')
+        plt.title(f'Frequency Domain of {axis} Axis (FFT)')
+        plt.xlabel('Frequency (Hz)')
+        plt.ylabel('Power Spectral Density')
+        plt.grid(True, which='both', linestyle='--')
+        plt.legend(loc='best')
+        plt.savefig(self.file_name.replace('.csv', f'_{axis}_axis_frequency_plot.png'))
+        plt.show()
+
+        
     def plot_data(self, overlap: bool):
         ''' Plots the data '''
         print('Experiment name:', self.experiment_name)
@@ -581,7 +656,7 @@ class NodeGUI(ctk.CTk):
         linestyles = ['-', '-', '-']
         axis_labels = ['X', 'Y', 'Z']
 
-        fig, axs = plt.subplots(3, 1, figsize=(15, 15))
+        fig, axs = plt.subplots(3, 1, figsize=(20, 15))
 
         for i, axis in enumerate(axis_labels):
             for cam_num in available_cameras:
@@ -597,6 +672,9 @@ class NodeGUI(ctk.CTk):
             axs[i].yaxis.set_major_locator(MaxNLocator(integer=True))
             axs[i].set_yticklabels([f'{x * 1000:.2f}' for x in axs[i].get_yticks()])
             axs[i].set_xticklabels([f'{x:.0f}' for x in axs[i].get_xticks()])
+        # Adjust the vertical spacing between subplots
+        plt.subplots_adjust(hspace=0.5)  # Increase the `hspace` value to add more space
+
 
         file_name = self.file_name.replace('.csv', '.png')
         plt.savefig(file_name)
@@ -1170,5 +1248,7 @@ class NodeGUI(ctk.CTk):
                 self.detect3_status = False
 if __name__ == "__main__":
     rospy.init_node('fin_gui', anonymous=False)
+    # Set logging level to INFO or higher to suppress DEBUG messages
+    rospy.set_param('/rosconsole/config/logger_level', 'INFO')
     app = NodeGUI()
     app.mainloop()
