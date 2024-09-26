@@ -89,7 +89,7 @@ class NodeGUI(ctk.CTk):
         self.sq_size_var = tk.StringVar(self, self.square_size)
         self.board_size_var = tk.StringVar(self, self.board_size)
 
-        self.tag_size = '0.020' # Dimension in meters for AprilTag
+        self.tag_size = '0.03' # Dimension in meters for AprilTag
         self.tag_family = "tag36h11" #  AprilTag family
         self.tag_size_var = tk.StringVar(self, self.tag_size)
         self.tag_family_var = tk.StringVar(self, self.tag_family)

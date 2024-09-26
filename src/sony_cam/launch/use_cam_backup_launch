@@ -1,0 +1,46 @@
+<launch>
+
+    <arg name="launch_nuc" default="sony_cam3" />
+    
+    <arg name="cam1_device_id" default="_cam1" />
+    <arg name="cam2_device_id" default="_cam2" />
+    <arg name="cam3_device_id" default="_cam3" />
+    <arg name="camera_fps" default="60" />
+    <arg name="image_width" default="640" />
+    <arg name="image_height" default="480" />
+
+    <group if = "$(eval launch_nuc == 'sony_cam1')">
+        <include file="$(find sony_cam)/launch/cam.launch">
+            <arg name="camera_name" value="$(arg launch_nuc)" />
+            <arg name="camera_id" value="$(arg cam1_device_id)" />
+            <arg name="camera_fps" value="$(arg camera_fps)" />
+            <arg name="image_width" value="$(arg image_width)" />
+            <arg name="image_height" value="$(arg image_height)" />
+            
+
+        </include>
+    </group>
+
+    <group if = "$(eval launch_nuc == 'sony_cam2')">
+        <include file="$(find sony_cam)/launch/cam.launch">
+            <arg name="camera_name" value="$(arg launch_nuc)" />
+            <arg name="camera_id" value="$(arg cam2_device_id)" />
+            <arg name="camera_fps" value="$(arg camera_fps)" />
+            <arg name="image_width" value="$(arg image_width)" />
+            <arg name="image_height" value="$(arg image_height)" />
+            <!-- <arg name="camera_id" value="4" /> -->
+        </include>
+    </group>
+
+    <group if = "$(eval launch_nuc == 'sony_cam3')">
+        <include file="$(find sony_cam)/launch/cam.launch">
+            <arg name="camera_name" value="$(arg launch_nuc)" />
+            <arg name="camera_id" value="$(arg cam3_device_id)" />
+            <arg name="camera_fps" value="$(arg camera_fps)" />
+            <arg name="image_width" value="$(arg image_width)" />
+            <arg name="image_height" value="$(arg image_height)" />
+            <!-- <arg name="camera_id" value="0" /> -->
+        </include>
+    </group>
+</launch>
+
