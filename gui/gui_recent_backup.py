@@ -147,7 +147,7 @@ class NodeGUI(ctk.CTk):
         self.create_right_top_frame_widgets()
     def create_right_top_frame_widgets(self)-> None:
         ''' Creates the widgets in the top frame in the right frame '''
-        self.right_top_frame_label = ctk.CTkLabel(self.right_top_frame, text=' ', text_color='white')
+        self.right_top_frame_label = ctk.CTkLabel(self.right_top_frame, text='SYSTEM INFORMATION', text_color='white')
         self.right_top_frame_label.place(relx=0.5, rely=0.5, anchor='center')
     def create_right_bottom_frame(self)-> None:
         ''' Creates the bottom frame in the right frame '''
@@ -156,10 +156,10 @@ class NodeGUI(ctk.CTk):
         self.create_right_bottom_frame_widgets()
     def create_right_bottom_frame_widgets(self)-> None:
         ''' creates button for camera 1 saving data and plotting data'''
-        # self.cam_custom_record_button = ctk.CTkButton(self.right_bottom_frame, text='cam 2 comparison', command=lambda:self.custom_cam_record(2))
-        # self.cam_custom_plot_button = ctk.CTkButton(self.right_bottom_frame, text='cam 2 plot', command=self.plot_data_custom)
-        # self.cam_custom_record_button.place(relx=0.5, rely=0.1, anchor='n')
-        # self.cam_custom_plot_button.place(relx=0.5, rely=0.3, anchor='n')
+        self.cam_custom_record_button = ctk.CTkButton(self.right_bottom_frame, text='cam 2 comparison', command=lambda:self.custom_cam_record(2))
+        self.cam_custom_plot_button = ctk.CTkButton(self.right_bottom_frame, text='cam 2 plot', command=self.plot_data_custom)
+        self.cam_custom_record_button.place(relx=0.5, rely=0.1, anchor='n')
+        self.cam_custom_plot_button.place(relx=0.5, rely=0.3, anchor='n')
     def custom_cam_record(self, cam_num=1):
         ''' Records the data '''
         rospy.loginfo(f'Recording Pose Data for Camera {cam_num}')
@@ -356,11 +356,11 @@ class NodeGUI(ctk.CTk):
         self.middle_second_center_dur_entry = ctk.CTkEntry(self.middle_second_center_frame, textvariable=self.exp_dur_var)
         self.middle_second_center_dur_entry.place(relx=0.8, rely=0.37, anchor='n', relwidth=0.2)
         self.middle_second_center_rec1_button = ctk.CTkButton(self.middle_second_center_frame, text='1', command=lambda:self.record_data(1))
-        self.middle_second_center_rec1_button.place(relx=0.1, rely=0.64, relwidth=0.2)
+        self.middle_second_center_rec1_button.place(relx=0.1, rely=0.58, relwidth=0.2)
         self.middle_second_center_rec2_button = ctk.CTkButton(self.middle_second_center_frame, text='2', command=lambda:self.record_data(2))
-        self.middle_second_center_rec2_button.place(relx=0.4, rely=0.64, relwidth=0.2)
+        self.middle_second_center_rec2_button.place(relx=0.4, rely=0.58, relwidth=0.2)
         self.middle_second_center_rec3_button = ctk.CTkButton(self.middle_second_center_frame, text='3', command=lambda:self.record_data(3))
-        self.middle_second_center_rec3_button.place(relx=0.7, rely=0.64, relwidth=0.2)
+        self.middle_second_center_rec3_button.place(relx=0.7, rely=0.58, relwidth=0.2)
         self.middle_second_center_recall_button = ctk.CTkButton(self.middle_second_center_frame, text='RECORD ALL', command=self.recall_data)
         self.middle_second_center_recall_button.place(relx=0.5, rely=0.8, anchor='n')
     def record_data_param_update(self):
@@ -647,17 +647,9 @@ class NodeGUI(ctk.CTk):
         start_time = data['Time (s)'].iloc[0]
         data['Time (s)'] = (data['Time (s)'] - start_time)
 
-        # Store the initial value for each axis across all cameras
-        initial_values = {'X': {}, 'Y': {}, 'Z': {}}
-        for axis in ['X', 'Y', 'Z']:
-            for cam_num in available_cameras:
-                col_name = f'Cam{cam_num} Position {axis}'
-                if col_name in data.columns:
-                    initial_values[axis][cam_num] = data[col_name].iloc[0]
-
-        def plot_axis(ax, x_data, y_data, label, color, linestyle='-', axis='X', cam_num=1):
-            # Subtract the initial value for the specific camera and axis
-            y_data = y_data - initial_values[axis][cam_num]
+        def plot_axis(ax, x_data, y_data, label, color, linestyle='-'):
+            # Subtract the DC component (mean) from the data
+            y_data = y_data - np.mean(y_data)
             ax.plot(x_data, y_data, label=label, color=color, linestyle=linestyle)
 
         colors = ['red', 'green', 'blue']
@@ -669,7 +661,7 @@ class NodeGUI(ctk.CTk):
         for i, axis in enumerate(axis_labels):
             for cam_num in available_cameras:
                 col_name = f'Cam{cam_num} Position {axis}'
-                plot_axis(axs[i], data['Time (s)'].values, data[col_name].values, f'Cam{cam_num} Position {axis}', colors[cam_num-1], linestyles[cam_num-1], axis=axis, cam_num=cam_num)
+                plot_axis(axs[i], data['Time (s)'].values, data[col_name].values, f'Cam{cam_num} Position {axis}', colors[cam_num-1], linestyles[cam_num-1])
             axs[i].set_title(f'{axis} Axis Displacement - {self.experiment_name}')
             axs[i].set_xlabel('Time (s)')
             axs[i].set_ylabel('Displacement (mm)')
@@ -680,9 +672,9 @@ class NodeGUI(ctk.CTk):
             axs[i].yaxis.set_major_locator(MaxNLocator(integer=True))
             axs[i].set_yticklabels([f'{x * 1000:.2f}' for x in axs[i].get_yticks()])
             axs[i].set_xticklabels([f'{x:.0f}' for x in axs[i].get_xticks()])
-
         # Adjust the vertical spacing between subplots
         plt.subplots_adjust(hspace=0.5)  # Increase the `hspace` value to add more space
+
 
         file_name = self.file_name.replace('.csv', '.png')
         plt.savefig(file_name)
