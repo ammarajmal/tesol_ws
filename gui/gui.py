@@ -54,9 +54,9 @@ class NodeGUI(ctk.CTk):
         self.detect2_status = False
         self.detect3_status = False
 
-        self.experiment_name = 'Exp1'
-        self.file_name = None
-        self.experiment_dur = 10 # seconds
+        self.experiment_name = 'Sine_1Hz'
+        self.file_name = 'Cam123'
+        self.experiment_dur = 20 # seconds
         self.exp_name_var = tk.StringVar(self, self.experiment_name)
         self.exp_dur_var = tk.StringVar(self, self.experiment_dur)
     
