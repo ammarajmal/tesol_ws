@@ -15,7 +15,7 @@ def callback(data):
     
 def resolution():
     rospy.init_node('resolution', anonymous=True)
-    rospy.Subscriber('/sony_cam3/image_raw', Image, callback)
+    rospy.Subscriber('/sony_cam2/image_raw', Image, callback)
     rospy.spin()
     
 if __name__ == '__main__':

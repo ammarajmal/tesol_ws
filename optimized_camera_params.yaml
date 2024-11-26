@@ -1,0 +1,83 @@
+camera_matrix:
+  cols: 3
+  data:
+  - 13989.222923171003
+  - 0.0
+  - 320.0
+  - 0.0
+  - 13989.222923171003
+  - 240.0
+  - 0.0
+  - 0.0
+  - 1.0
+  rows: 3
+camera_name: sony_cam2
+distortion_coefficients:
+  cols: 14
+  data:
+  - -1.56488
+  - -0.0128634
+  - 0.00610089
+  - 0.0116958
+  - -2.16654e-05
+  - -0.714539
+  - 0.0128627
+  - 2.16617e-05
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  rows: 1
+distortion_model: rational_polynomial
+image_height: 480
+image_width: 640
+projection_matrix:
+  cols: 4
+  data:
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - &id001 !!python/object/apply:numpy.dtype
+      args:
+      - f8
+      - false
+      - true
+      state: !!python/tuple
+      - 3
+      - <
+      - null
+      - null
+      - null
+      - -1
+      - -1
+      - 0
+    - !!binary |
+      fRi/iJxSy0A=
+  - 0
+  - 320.0
+  - 0
+  - 0
+  - !!python/object/apply:numpy.core.multiarray.scalar
+    - *id001
+    - !!binary |
+      fRi/iJxSy0A=
+  - 240.0
+  - 0
+  - 0
+  - 0
+  - 1
+  - 0
+  rows: 3
+rectification_matrix:
+  cols: 3
+  data:
+  - 1
+  - 0
+  - 0
+  - 0
+  - 1
+  - 0
+  - 0
+  - 0
+  - 1
+  rows: 3
