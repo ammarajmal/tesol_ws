@@ -1,0 +1,36 @@
+<launch>
+    <!-- Define arguments with default values -->
+    <arg name="launch_nuc" default="sony_cam1" />
+    <arg name="fiducial_len" default="0.02"/>
+    <arg name="dictionary" default="DICT_7X7_1000"/>
+    <arg name="visualize" default="true"/>
+
+    <!-- Conditionally include the launch file based on the value of launch_nuc -->
+    <group if="$(eval launch_nuc == 'sony_cam1')">
+        <include file="$(find tesol_detect)/launch/tesol.launch">
+            <arg name="camera_name" value="$(arg launch_nuc)" />
+            <arg name="fiducial_len" value="$(arg fiducial_len)" />
+            <arg name="dictionary" value="$(arg dictionary)" />
+            <arg name="visualize" value="$(arg visualize)" />
+        </include>
+    </group>
+
+    <group if="$(eval launch_nuc == 'sony_cam2')">
+        <include file="$(find tesol_detect)/launch/tesol.launch">
+            <arg name="camera_name" value="$(arg launch_nuc)" />
+            <arg name="fiducial_len" value="$(arg fiducial_len)" />
+            <arg name="dictionary" value="$(arg dictionary)" />
+            <arg name="visualize" value="$(arg visualize)" />
+        </include>
+    </group>
+
+    <group if="$(eval launch_nuc == 'sony_cam3')">
+        <include file="$(find tesol_detect)/launch/tesol.launch">
+            <arg name="camera_name" value="$(arg launch_nuc)" />
+            <arg name="fiducial_len" value="$(arg fiducial_len)" />
+            <arg name="dictionary" value="$(arg dictionary)" />
+            <arg name="visualize" value="$(arg visualize)" />
+        </include>
+    </group>
+
+</launch>

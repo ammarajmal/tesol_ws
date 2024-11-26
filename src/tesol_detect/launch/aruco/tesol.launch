@@ -1,0 +1,15 @@
+<launch>
+    <arg name="camera_name" default="sony_cam2"/>
+    <arg name="dictionary" default="DICT_7X7_1000"/>
+    <arg name="fiducial_len" default="0.020"/>
+    <arg name="visualize" default="true"/>
+
+    <!-- Node definition with parameters in private namespace -->
+    <node name="$(arg camera_name)_detector" pkg="tesol_detect" type="tesol_aruco.py" output="screen">
+        <param name="camera_name" value="$(arg camera_name)" />
+        <param name="dictionary" value="$(arg dictionary)" />
+        <param name="fiducial_len" value="$(arg fiducial_len)" />
+        <param name="visualize" value="$(arg visualize)" />
+        <param name="corner_refine_criteria" value="[3,20,0.001]"/>
+    </node>
+</launch>
