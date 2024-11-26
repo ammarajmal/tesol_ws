@@ -54,10 +54,10 @@ class NodeGUI(ctk.CTk):
         self.detect2_status = False
         self.detect3_status = False
 
-        self.experiment_name = 'Sweap130'
+        self.experiment_name = 'DC0'
         self.file_name = 'Cam2'
-        self.experiment_dur = 120 # seconds
-        self.dir_name = 'Single_Story'
+        self.experiment_dur = 10 # seconds
+        self.dir_name = '26NOV'
         self.exp_name_var = tk.StringVar(self, self.experiment_name)
         self.exp_dur_var = tk.StringVar(self, self.experiment_dur)
         self.middle_second_center_dir_var = tk.StringVar(self, self.dir_name)
@@ -91,7 +91,7 @@ class NodeGUI(ctk.CTk):
         self.sq_size_var = tk.StringVar(self, self.square_size)
         self.board_size_var = tk.StringVar(self, self.board_size)
 
-        self.tag_size = '0.03' # Dimension in meters for AprilTag
+        self.tag_size = '0.04' # Dimension in meters for AprilTag
         self.tag_family = "tag36h11" #  AprilTag family
         self.tag_size_var = tk.StringVar(self, self.tag_size)
         self.tag_family_var = tk.StringVar(self, self.tag_family)

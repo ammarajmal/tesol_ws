@@ -95,7 +95,7 @@ class AprilTagDetector:
         ])
 
         for detection in detections:
-            if detection.tag_id == 1:
+            if detection.tag_id == 0:
                 image_points = detection.corners.reshape(4, 2)
 
                 success, rvec, tvec = cv2.solvePnP(object_points, image_points, self.camera_matrix, self.dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
