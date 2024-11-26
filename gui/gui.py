@@ -54,11 +54,13 @@ class NodeGUI(ctk.CTk):
         self.detect2_status = False
         self.detect3_status = False
 
-        self.experiment_name = 'Sine_1Hz'
-        self.file_name = 'Cam123'
-        self.experiment_dur = 20 # seconds
+        self.experiment_name = 'Sweap130'
+        self.file_name = 'Cam2'
+        self.experiment_dur = 120 # seconds
+        self.dir_name = 'Single_Story'
         self.exp_name_var = tk.StringVar(self, self.experiment_name)
         self.exp_dur_var = tk.StringVar(self, self.experiment_dur)
+        self.middle_second_center_dir_var = tk.StringVar(self, self.dir_name)
     
         self.image_width = '640'
         self.image_height = '480'
@@ -343,7 +345,6 @@ class NodeGUI(ctk.CTk):
         self.middle_second_center_record_label.place(relx=0.5, rely=0.05, anchor='n')
         self.middle_second_center_dir_label = ctk.CTkLabel(self.middle_second_center_frame, text='Directory Name: ')
         self.middle_second_center_dir_label.place(relx=0.09, rely=0.5)
-        self.middle_second_center_dir_var = tk.StringVar(self)
         self.middle_second_center_dir_entry = ctk.CTkEntry(self.middle_second_center_frame, textvariable=self.middle_second_center_dir_var)
         self.middle_second_center_dir_entry.place(relx=0.75, rely=0.5, anchor='n', relwidth=0.3)
 
