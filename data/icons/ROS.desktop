@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=ROS
+Exec=gnome-terminal -- /bin/bash -c "source /opt/ros/noetic/setup.bash && roscore; exec /bin/bash"
+Icon=/home/ammar/tesol_ws/data/icons/ros.png
+Terminal=false
+Categories=Utility; Application;

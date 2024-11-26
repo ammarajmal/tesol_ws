@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=GUI
+
+Exec=gnome-terminal -- /bin/bash -c "source /opt/ros/noetic/setup.bash && source /home/ammar/tesol_ws/devel/setup.bash && cd /home/ammar/tesol_ws/gui && python3 gui.py; exec /bin/bash"
+Icon=/home/ammar/tesol_ws/data/icons/main.png
+Terminal=true
+Categories=Utility; Application;
