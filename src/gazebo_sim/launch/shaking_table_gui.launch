@@ -1,0 +1,9 @@
+<launch>
+  <!-- Launch Gazebo -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find gazebo_sim)/worlds/shaking_table.world"/>
+  </include>
+
+  <!-- Run GUI Node -->
+  <node name="shaking_table_gui" pkg="gazebo_sim" type="shaking_gui.py" output="screen"/>
+</launch>

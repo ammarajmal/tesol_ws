@@ -398,7 +398,7 @@ cpp_common_DIR:PATH=/opt/ros/noetic/share/cpp_common/cmake
 cv_bridge_DIR:PATH=/opt/ros/noetic/share/cv_bridge/cmake
 
 //The directory containing a CMake configuration file for fiducial_msgs.
-fiducial_msgs_DIR:PATH=/opt/ros/noetic/share/fiducial_msgs/cmake
+fiducial_msgs_DIR:PATH=/home/ammar/tesol_ws/devel/share/fiducial_msgs/cmake
 
 //The directory containing a CMake configuration file for geometry_msgs.
 geometry_msgs_DIR:PATH=/opt/ros/noetic/share/geometry_msgs/cmake
