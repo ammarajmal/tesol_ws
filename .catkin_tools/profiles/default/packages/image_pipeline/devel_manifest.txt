@@ -1,2 +1,0 @@
-image_pipeline/image_pipeline
-/home/tesol/tesol/devel/.private/image_pipeline/cmake.lock /home/tesol/tesol/devel/./cmake.lock

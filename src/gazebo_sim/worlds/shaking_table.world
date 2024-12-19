@@ -1,14 +1,19 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
   <world name="default">
+    <!-- Ground Plane -->
     <include>
       <uri>model://ground_plane</uri>
     </include>
+
+    <!-- Sun -->
     <include>
       <uri>model://sun</uri>
     </include>
+
+    <!-- Shaking Table -->
     <include>
-        <uri>model://shaking_table</uri>
+      <uri>model://shaking_table</uri>
     </include>
   </world>
 </sdf>

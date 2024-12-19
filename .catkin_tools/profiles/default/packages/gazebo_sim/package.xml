@@ -3,11 +3,21 @@
   <name>gazebo_sim</name>
   <version>0.0.0</version>
   <description>The gazebo_sim package</description>
-  <maintainer email="ammar@todo.todo">ammar</maintainer>
-  <license>TODO</license>\<depend>roscpp</depend>
-  <depend>std_msgs</depend>
+  <maintainer email="ammar@todo.todo">Ammar</maintainer>
+  <license>MIT</license>
+
+  <!-- Build dependencies -->
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
   <build_depend>gazebo</build_depend>
+
+  <!-- Build tool dependencies -->
   <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Execution dependencies -->
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+
   <export>
   </export>
 </package>

@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="test">
+    <!-- Ground Plane -->
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <!-- Test Model -->
+    <model name="test_table">
+      <static>false</static>
+      <link name="test_link">
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>1 1 0.1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1 1 0.1</size>
+            </box>
+          </geometry>
+        </visual>
+      </link>
+      <plugin name="shaking_plugin" filename="libshaking_plugin.so">
+        <amplitude>2</amplitude>
+        <frequency>2</frequency>
+      </plugin>
+    </model>
+  </world>
+</sdf>
