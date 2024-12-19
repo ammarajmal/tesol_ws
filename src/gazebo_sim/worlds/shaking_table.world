@@ -11,9 +11,30 @@
       <uri>model://sun</uri>
     </include>
 
+    <!-- Building Model -->
+    <include>
+      <uri>model://building</uri>
+        <pose>0 0 0.2 1.5708 0 0</pose> <!-- Position adjusted -->
+    </include>
+
     <!-- Shaking Table -->
     <include>
       <uri>model://shaking_table</uri>
     </include>
+
+    <!-- Fixed Joint to Ground -->
+    <joint name="table_to_ground" type="fixed">
+      <parent>world</parent>
+      <child>shaking_table::table</child>
+    </joint>
+
+        <!-- Fixed Joint to Attach Building to Shaking Table -->
+<joint name="table_building_joint" type="fixed">
+  <parent>shaking_table::table</parent>
+  <child>shear_building::building_link</child>
+</joint>
+
+
+
   </world>
 </sdf>

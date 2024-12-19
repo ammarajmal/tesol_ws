@@ -8,7 +8,7 @@
       <collision name="collision">
         <geometry>
           <box>
-            <size>1 1 0.1</size>
+            <size>1.0 1.0 0.2</size> <!-- Adjusted size -->
           </box>
         </geometry>
       </collision>
@@ -17,21 +17,15 @@
       <visual name="visual">
         <geometry>
           <box>
-            <size>1 1 0.1</size>
+            <size>1.0 1.0 0.2</size> <!-- Adjusted size -->
           </box>
         </geometry>
-        <!-- <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Red</name>
-          </script>
-        </material> -->
       </visual>
     </link>
 
-    <!-- Shaking Plugin -->
+    <!-- Shaking Table Plugin -->
     <plugin name="shaking_plugin" filename="libshaking_plugin.so">
-      <amplitude>0.1</amplitude>
+      <amplitude>0.5</amplitude>
       <frequency>1.0</frequency>
     </plugin>
   </model>

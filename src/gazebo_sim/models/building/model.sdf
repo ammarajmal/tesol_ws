@@ -1,0 +1,28 @@
+<sdf version="1.6">
+  <model name="shear_building">
+    <static>true</static>
+    <link name="building_link">
+      <!-- Visual -->
+      <visual name="building_visual">
+        <geometry>
+          <mesh>
+            <uri>model://building/meshes/shear_building.stl</uri>
+            <scale>0.002 0.002 0.002</scale> <!-- Reduce the size by 10x -->
+          </mesh>
+        </geometry>
+      </visual>
+
+      <!-- Collision -->
+      <collision name="building_collision">
+        <geometry>
+          <mesh>
+            <uri>model://building/meshes/shear_building.stl</uri>
+            <scale>0.002 0.002 0.002</scale> <!-- Reduce the size by 10x -->
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+    <!-- Add a plugin to the building to control the scale  -->
+    <plugin name="building_plugin" filename="libbuilding_plugin.so"/>
+  </model>
+</sdf>

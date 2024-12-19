@@ -1,9 +1,22 @@
 <launch>
-  <!-- Launch Gazebo -->
-  <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" value="$(find gazebo_sim)/worlds/shaking_table.world"/>
-  </include>
+  <!-- Arguments -->
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui_mode" default="light"/>
 
-  <!-- Run GUI Node -->
-  <node name="shaking_table_gui" pkg="gazebo_sim" type="shaking_gui.py" output="screen"/>
+  <!-- Namespace for simulation -->
+  <group ns="shaking_table_sim">
+    <!-- Launch Gazebo -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+      <arg name="world_name" value="$(find gazebo_sim)/worlds/shaking_table.world"/>
+      <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    </include>
+
+    <!-- Run GUI Node -->
+    <node name="shaking_table_gui" pkg="gazebo_sim" type="shaking_gui.py" output="screen">
+      <param name="gui_mode" value="$(arg gui_mode)"/>
+    </node>
+  </group>
+
+  <!-- Monitoring -->
+  <node name="monitor" pkg="rqt_top" type="rqt_top" output="screen"/>
 </launch>
