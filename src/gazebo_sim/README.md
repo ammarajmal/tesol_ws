@@ -25,7 +25,9 @@ This package is ideal for structural and mechanical engineers performing modal a
   - Enables interaction with ROS topics and nodes for real-time control and data processing.
 
 ---
+![Simulation in Action](docs/gazebo_sim.gif)
 
+---
 ## Installation
 
 1. Clone the repository into your ROS workspace:
