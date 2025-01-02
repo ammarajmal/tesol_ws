@@ -1,20 +1,53 @@
 <launch>
-  <include
-    file="$(find gazebo_ros)/launch/empty_world.launch" />
+  <!-- Launch Gazebo -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find gsim_urdf_pkg)/worlds/empty.world" />
+  </include>
+
+  <!-- Load the robot description into the parameter server -->
+  <param name="robot_description" command="$(find xacro)/xacro $(find gsim_urdf_pkg)/urdf/gsim_urdf_pkg.urdf" />
+
+  <!-- Static transform between base_link and base_footprint -->
   <node
     name="tf_footprint_base"
     pkg="tf"
     type="static_transform_publisher"
     args="0 0 0 0 0 0 base_link base_footprint 40" />
+
+  <!-- Spawn the robot in Gazebo -->
   <node
     name="spawn_model"
     pkg="gazebo_ros"
     type="spawn_model"
-    args="-file $(find gsim_urdf_pkg)/urdf/gsim_urdf_pkg.urdf -urdf -model gsim_urdf_pkg"
+    args="-param robot_description -urdf -model gsim_urdf_pkg"
     output="screen" />
+
+  <!-- Publish fake joint calibration -->
   <node
     name="fake_joint_calibration"
     pkg="rostopic"
     type="rostopic"
     args="pub /calibrated std_msgs/Bool true" />
+
+  <!-- Robot State Publisher -->
+  <node
+    name="robot_state_publisher"
+    pkg="robot_state_publisher"
+    type="robot_state_publisher"
+    output="screen" />
+
+  <!-- Joint State Publisher GUI -->
+  <node
+    name="joint_state_publisher_gui"
+    pkg="joint_state_publisher_gui"
+    type="joint_state_publisher_gui"
+    respawn="false" />
+
+  <!-- Rviz for visualization -->
+  <node
+    name="rviz"
+    pkg="rviz"
+    type="rviz"
+    args="-d $(find gsim_urdf_pkg)/config/gsim_urdf_pkg.rviz"
+    output="screen" />
 </launch>
