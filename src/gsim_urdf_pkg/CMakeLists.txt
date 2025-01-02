@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  sensor_msgs
   message_generation
   geometry_msgs
   gazebo_ros
@@ -39,7 +40,8 @@ catkin_package(
   CATKIN_DEPENDS 
     roscpp 
     rospy 
-    std_msgs 
+    std_msgs
+    sensor_msgs
     message_runtime 
     geometry_msgs 
     urdf
