@@ -10,7 +10,14 @@
 namespace gazebo {
 class ShakingTablePlugin : public ModelPlugin {
 public:
-  ShakingTablePlugin() : frequency(1.0), amplitude(0.01), timeElapsed(0.0) {}
+  ShakingTablePlugin()
+    : frequency(1.0),
+      amplitude(0.01),
+      timeElapsed(0.0),
+      frequency_min(1.0),
+      frequency_max(30.0),
+      sweep_duration(120.0),
+      sweep_rate(0.0) {}
 
   void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) override {
     this->model = _parent;
@@ -25,9 +32,12 @@ public:
     if (_sdf->HasElement("frequency_max")) {
       this->frequency_max = _sdf->Get<double>("frequency_max");
     }
-    if (_sdf->HasElement("sweep_rate")) {
-      this->sweep_rate = _sdf->Get<double>("sweep_rate");
+    if (_sdf->HasElement("sweep_duration")) {
+      this->sweep_duration = _sdf->Get<double>("sweep_duration");
     }
+
+    // Calculate sweep_rate based on sweep_duration
+    this->sweep_rate = (this->frequency_max - this->frequency_min) / this->sweep_duration;
 
     // Define natural frequencies for each floor
     this->naturalFrequencies = {2.0, 4.0, 6.0, 8.0, 10.0}; // Example values
@@ -72,8 +82,11 @@ public:
       this->frequency = this->frequency_max;
     }
 
+    // Make amplitude decrease with frequency (example: inverse relation)
+    double adjustedAmplitude = this->amplitude / (1 + 0.1 * this->frequency); // Scale factor
+
     // Calculate base displacement
-    double baseDisplacement = this->amplitude * sin(2 * M_PI * this->frequency * this->timeElapsed);
+    double baseDisplacement = adjustedAmplitude * sin(2 * M_PI * this->frequency * this->timeElapsed);
 
     // Apply motion to each joint
     for (size_t i = 0; i < this->joints.size(); ++i) {
@@ -85,7 +98,7 @@ public:
       }
 
       // Set joint position
-      this->joints[i]->SetPosition(0, floorDisplacement);
+      this->joints[i]->SetPosition(0, floorDisplacement); // Consider using SetPositionTarget for realism
     }
 
     // Publish the current frequency
@@ -102,9 +115,10 @@ private:
   ros::Publisher frequencyPub;
 
   double frequency;
-  double frequency_min = 1.0;
-  double frequency_max = 30.0;
-  double sweep_rate = 0.05;
+  double frequency_min;
+  double frequency_max;
+  double sweep_rate;
+  double sweep_duration;
   double amplitude;
   double timeElapsed;
   std::vector<double> naturalFrequencies;
