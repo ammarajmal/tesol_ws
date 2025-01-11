@@ -2,7 +2,6 @@
   <!-- Launch Gazebo -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
   <arg name="verbose" value="true" />
-    <arg name="world_name" value="$(find gsim_urdf_pkg)/worlds/empty.world" />
   </include>
 
   <!-- Load the robot description into the parameter server -->

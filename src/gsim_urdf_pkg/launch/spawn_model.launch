@@ -1,0 +1,7 @@
+<launch>
+    <!-- Load URDF into robot_description -->
+    <param name="robot_description" command="cat /home/ammar/tesol_ws/src/gsim_urdf_pkg/urdf/gsim_urdf_pkg.urdf" />
+
+    <!-- Spawn the URDF model -->
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model gsim_model" />
+</launch>

@@ -16,3 +16,6 @@
 [submodule "src/charuco_calibration"]
 	path = src/charuco_calibration
 	url = https://github.com/ammarajmal/charuco_calibration.git
+[submodule "src/tb3_aprilTag"]
+	path = src/tb3_aprilTag
+	url = https://github.com/YuehChuan/tb3_aprilTag

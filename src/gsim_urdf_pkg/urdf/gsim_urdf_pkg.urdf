@@ -42,13 +42,13 @@
             <sweep_rate>0.05</sweep_rate> <!-- Rate of frequency increase in Hz/s -->
             <motion_axis>x</motion_axis> <!-- Axis of motion: x, y, or z -->
             <phase_offset>0.0</phase_offset> <!-- Phase shift in radians -->
-            <damping_factor>0.01</damping_factor> <!-- Damping factor -->
+            <damping_factor>0.02</damping_factor> <!-- Damping factor -->
         </plugin>
     </gazebo>
 
     <gazebo reference="camera_link">
         <sensor name="camera" type="camera">
-            <pose>5 0 5 0 -0.5 0</pose>
+            <pose>-5 0 5 0 -0.5 0</pose>
             <camera>
             <horizontal_fov>1.5708</horizontal_fov>
             <image>
@@ -263,4 +263,12 @@
         <child link="camera_link"/>
     </joint>
 
+    <!-- Apriltag  -->
+    <!-- AprilTag Reference -->
+    <gazebo reference="fifth_link">
+        <model name="apriltag">
+            <pose>0 0 0.35 0 0 0</pose> <!-- Adjust position relative to fifth_link -->
+            <file>model://Apriltag36_11_00000</file>
+        </model>
+    </gazebo>
 </robot>
