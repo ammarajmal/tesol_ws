@@ -36,13 +36,13 @@
     <!-- Shaking table plugin -->
     <gazebo>
         <plugin name="shaking_table_plugin" filename="libshaking_table_plugin.so">
-            <amplitude>0.005</amplitude> <!-- Amplitude in meters -->
+            <amplitude>0.001</amplitude> <!-- Amplitude in meters -->
             <frequency_min>1.0</frequency_min> <!-- Minimum frequency in Hz -->
             <frequency_max>30.0</frequency_max> <!-- Maximum frequency in Hz -->
             <sweep_rate>0.05</sweep_rate> <!-- Rate of frequency increase in Hz/s -->
-            <motion_axis>x</motion_axis> <!-- Axis of motion: x, y, or z -->
+            <motion_axis>y</motion_axis> <!-- Axis of motion: x, y, or z -->
             <phase_offset>0.0</phase_offset> <!-- Phase shift in radians -->
-            <damping_factor>0.02</damping_factor> <!-- Damping factor -->
+            <damping_factor>0.05</damping_factor> <!-- Damping factor -->
         </plugin>
     </gazebo>
 
@@ -102,9 +102,9 @@
         <origin xyz="-0.05 -0.08 0.05" rpy="0 0 0"/>
         <parent link="base_link"/>
         <child link="first_link"/>
-        <axis xyz="1 0 0"/>
+        <axis xyz="0 1 0"/>
         <limit lower="-0.01" upper="0.01" effort="5" velocity="0.5"/>
-        <dynamics damping="0.1" friction="0.1"/>
+        <dynamics damping="0.1" friction="0.5"/>
     </joint>
 
     <!-- Floor 2 -->
@@ -134,9 +134,9 @@
         <origin xyz="0 -0.002 0.35" rpy="0 0 0"/>
         <parent link="first_link"/>
         <child link="second_link"/>
-        <axis xyz="1 0 0"/>
+        <axis xyz="0 1 0"/>
         <limit lower="-0.01" upper="0.01" effort="5" velocity="0.5"/>
-        <dynamics damping="0.1" friction="0.1"/>
+        <dynamics damping="0.1" friction="0.5"/>
     </joint>
 
     <!-- Floor 3 -->
@@ -166,9 +166,9 @@
         <origin xyz="0 0 0.35" rpy="0 0 0"/>
         <parent link="second_link"/>
         <child link="third_link"/>
-        <axis xyz="1 0 0"/>
+        <axis xyz="0 1 0"/>
         <limit lower="-0.01" upper="0.01" effort="5" velocity="0.5"/>
-        <dynamics damping="0.1" friction="0.1"/>
+        <dynamics damping="0.1" friction="0.5"/>
     </joint>
 
     <!-- Floor 4 -->
@@ -198,9 +198,9 @@
         <origin xyz="0 0.001 0.35" rpy="0 0 0"/>
         <parent link="third_link"/>
         <child link="fourth_link"/>
-        <axis xyz="1 0 0"/>
+        <axis xyz="0 1 0"/>
         <limit lower="-0.01" upper="0.01" effort="5" velocity="0.5"/>
-        <dynamics damping="0.1" friction="0.1"/>
+        <dynamics damping="0.1" friction="0.5"/>
     </joint>
 
     <!-- Floor 5 -->
@@ -230,9 +230,9 @@
         <origin xyz="0 -0.001 0.35" rpy="0 0 0"/>
         <parent link="fourth_link"/>
         <child link="fifth_link"/>
-        <axis xyz="1 0 0"/>
+        <axis xyz="0 1 0"/>
         <limit lower="-0.01" upper="0.01" effort="5" velocity="0.5"/>
-        <dynamics damping="0.1" friction="0.1"/>
+        <dynamics damping="0.1" friction="0.5"/>
     </joint>
 
     <!-- Camera Sensor -->
