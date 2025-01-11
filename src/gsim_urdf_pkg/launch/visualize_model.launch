@@ -1,0 +1,13 @@
+<launch>
+    <!-- Publish the robot description -->
+    <param name="robot_description" command="cat $(find gsim_urdf_pkg)/urdf/gsim_urdf_pkg.urdf" type="string"/>
+
+    <!-- Publish joint states -->
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+
+    <!-- Robot State Publisher -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+
+    <!-- RViz -->
+    <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find gsim_urdf_pkg)/rviz/gsim_model.rviz" required="true"/> -->
+</launch>
