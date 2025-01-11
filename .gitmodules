@@ -1,21 +1,23 @@
-
 [submodule "src/fiducials"]
-	path = src/fiducials
-	url = https://github.com/ammarajmal/fiducials
-	branch = noetic-devel
+    path = src/fiducials
+    url = https://github.com/ammarajmal/fiducials
+    branch = noetic-devel
 [submodule "src/vision_msgs"]
-	path = src/vision_msgs
-	url = https://github.com/ammarajmal/vision_msgs.git
-	branch = noetic-devel
+    path = src/vision_msgs
+    url = https://github.com/ammarajmal/vision_msgs.git
+    branch = noetic-devel
 [submodule "src/camera_info_manager_py"]
-	path = src/camera_info_manager_py
-	url = https://github.com/ammarajmal/camera_info_manager_py.git
+    path = src/camera_info_manager_py
+    url = https://github.com/ammarajmal/camera_info_manager_py.git
 [submodule "src/cv_camera"]
-	path = src/cv_camera
-	url = https://github.com/ammarajmal/cv_camera.git
+    path = src/cv_camera
+    url = https://github.com/ammarajmal/cv_camera.git
 [submodule "src/charuco_calibration"]
-	path = src/charuco_calibration
-	url = https://github.com/ammarajmal/charuco_calibration.git
+    path = src/charuco_calibration
+    url = https://github.com/ammarajmal/charuco_calibration.git
 [submodule "src/tb3_aprilTag"]
-	path = src/tb3_aprilTag
-	url = https://github.com/YuehChuan/tb3_aprilTag
+    path = src/tb3_aprilTag
+    url = https://github.com/YuehChuan/tb3_aprilTag
+[submodule "src/gazebo_apriltag"]
+    path = src/gazebo_apriltag
+    url = https://github.com/koide3/gazebo_apriltag
