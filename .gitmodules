@@ -18,3 +18,6 @@
 [submodule "src/gazebo_apriltag"]
     path = src/gazebo_apriltag
     url = https://github.com/koide3/gazebo_apriltag
+[submodule "src/apriltag"]
+	path = src/apriltag
+	url = https://github.com/AprilRobotics/apriltag.git
