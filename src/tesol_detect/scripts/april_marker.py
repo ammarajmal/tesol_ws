@@ -6,7 +6,9 @@ from cv_bridge import CvBridge, CvBridgeError
 import cv2
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-import apriltag
+# import apriltag
+from pupil_apriltags import Detector
+
 
 class AprilTagDetector:
     def __init__(self):
@@ -25,7 +27,9 @@ class AprilTagDetector:
         self.initial_rotation_matrix = None
         self.initial_translation_vector = None
 
-        self.detector = apriltag.Detector(apriltag.DetectorOptions(families=self.tag_family))
+        # self.detector = apriltag.Detector(apriltag.DetectorOptions(families=self.tag_family))
+        self.detector = Detector(families=self.tag_family)
+
 
         self.image_sub = rospy.Subscriber(f"/{self.camera_name}/image_raw", Image, self.image_callback)
         self.camera_info_sub = rospy.Subscriber(f"/{self.camera_name}/camera_info", CameraInfo, self.camera_info_callback)
@@ -57,7 +61,9 @@ class AprilTagDetector:
         input_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
         gray = cv2.cvtColor(input_image, cv2.COLOR_BGR2GRAY)
 
-        detections = self.detector.detect(gray)
+        # detections = self.detector.detect(gray)
+        detections = self.detector.detect(gray, estimate_tag_pose=False, camera_params=None, tag_size=self.tag_size)
+
 
         if detections:
             self.publish_tag_detections(detections, input_image)
