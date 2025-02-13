@@ -101,31 +101,31 @@ class AprilTagDetector:
         ])
 
         for detection in detections:
-            if detection.tag_id == 0:
-                image_points = detection.corners.reshape(4, 2)
+            # if detection.tag_id == 0:
+            image_points = detection.corners.reshape(4, 2)
 
-                success, rvec, tvec = cv2.solvePnP(object_points, image_points, self.camera_matrix, self.dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
+            success, rvec, tvec = cv2.solvePnP(object_points, image_points, self.camera_matrix, self.dist_coeffs, flags=cv2.SOLVEPNP_ITERATIVE)
 
-                if success:
-                    rotation_mat, _ = cv2.Rodrigues(rvec)
-                    
-                    # Accumulate initial rotation matrices and translation vectors
-                    if len(self.initial_rotation_matrices) < self.stabilization_frames:
-                        self.initial_rotation_matrices.append(rotation_mat)
-                        self.initial_translation_vectors.append(tvec)
+            if success:
+                rotation_mat, _ = cv2.Rodrigues(rvec)
+                
+                # Accumulate initial rotation matrices and translation vectors
+                if len(self.initial_rotation_matrices) < self.stabilization_frames:
+                    self.initial_rotation_matrices.append(rotation_mat)
+                    self.initial_translation_vectors.append(tvec)
 
-                    if len(self.initial_rotation_matrices) == self.stabilization_frames:
-                        # Compute the average rotation matrix and translation vector
-                        self.initial_rotation_matrix = self.average_rotation_matrices(self.initial_rotation_matrices)
-                        self.initial_translation_vector = np.mean(self.initial_translation_vectors, axis=0)
+                if len(self.initial_rotation_matrices) == self.stabilization_frames:
+                    # Compute the average rotation matrix and translation vector
+                    self.initial_rotation_matrix = self.average_rotation_matrices(self.initial_rotation_matrices)
+                    self.initial_translation_vector = np.mean(self.initial_translation_vectors, axis=0)
 
-                    if self.initial_rotation_matrix is not None:
-                        transform = self.compute_fiducial_transform(detection.tag_id, rotation_mat, tvec)
-                        fiducial_array_msg.transforms.append(transform)
+                if self.initial_rotation_matrix is not None:
+                    transform = self.compute_fiducial_transform(detection.tag_id, rotation_mat, tvec)
+                    fiducial_array_msg.transforms.append(transform)
 
-                        if self.visualize:
-                            axis_length = self.tag_size / 2
-                            cv2.drawFrameAxes(image, self.camera_matrix, self.dist_coeffs, rvec, tvec, axis_length)
+                    if self.visualize:
+                        axis_length = self.tag_size / 2
+                        cv2.drawFrameAxes(image, self.camera_matrix, self.dist_coeffs, rvec, tvec, axis_length)
 
         self.pose_pub.publish(fiducial_array_msg)
 
