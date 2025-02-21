@@ -1,1 +1,1 @@
-/home/nuc1/tesol_ws/devel/.private/tesol_detect/lib/pkgconfig/tesol_detect.pc
+/home/sitl2/tesol_ws/devel/.private/tesol_detect/lib/pkgconfig/tesol_detect.pc

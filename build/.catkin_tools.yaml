@@ -1,6 +1,6 @@
-devel_space: /home/nuc1/tesol_ws/devel
+devel_space: /home/sitl2/tesol_ws/devel
 install: false
-install_space: /home/nuc1/tesol_ws/install
+install_space: /home/sitl2/tesol_ws/install
 profile: default
-source_space: /home/nuc1/tesol_ws/src
-workspace: /home/nuc1/tesol_ws
+source_space: /home/sitl2/tesol_ws/src
+workspace: /home/sitl2/tesol_ws

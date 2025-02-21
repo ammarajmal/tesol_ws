@@ -55,18 +55,6 @@ public:
         if (!cap_.open(device_id_, cv::CAP_V4L2)) {
             throw std::runtime_error("Could not open video device: " + device_id_);
         }
-        //             // Attempt to set the camera to use MJPG by specifying the FourCC code
-        // // Note: The actual effectiveness of this command can vary by camera and driver support
-        // bool isSetMJPG = cap_.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
-
-        // bool result_width = cap_.set(cv::CAP_PROP_FRAME_WIDTH, image_width_);
-        // bool result_height = cap_.set(cv::CAP_PROP_FRAME_HEIGHT, image_height_);
-        // if (!result_width || !result_height) {
-        //     ROS_WARN("Failed to set camera resolution to %dx%d.", image_width_, image_height_);
-        // }
-    // if (!isSetMJPG) {
-    //     ROS_WARN("Unable to set camera to MJPG format; defaulting to camera's current setting.");
-    // }
     }
 
     void InitCameraInfoManager() {
@@ -81,14 +69,11 @@ public:
         }
     }
 
-void AdvertiseTopics() {
-    // Fetch the resolved name of the node, which includes the namespace
-    std::string node_name = ros::this_node::getName();
-
-    // Use the node name to prefix the topics
-    pub_image_raw_ = it_.advertise(node_name + "/image_raw", 1);
-    pub_camera_info_ = nh_.advertise<sensor_msgs::CameraInfo>(node_name + "/camera_info", 1);
-}
+    void AdvertiseTopics() {
+        std::string node_name = ros::this_node::getName();
+        pub_image_raw_ = it_.advertise(node_name + "/image_raw", 1);
+        pub_camera_info_ = nh_.advertise<sensor_msgs::CameraInfo>(node_name + "/camera_info", 1);
+    }
 
 
     void AdvertiseService() {
@@ -119,13 +104,19 @@ void AdvertiseTopics() {
     }
 
     void PublishImage() {
+        static ros::Time last_time = ros::Time::now();
         cv::Mat frame;
         if (cap_.read(frame)) { // Capture a frame
             try {
                 cv::resize(frame, frame, cv::Size(image_width_, image_height_), 0, 0, cv::INTER_LINEAR);
-
                 ros::Time current_time = ros::Time::now();
+                double frame_time_diff = (current_time - last_time).toSec();
+                last_time = current_time;
 
+                // Log the actual frame rate every 2 seconds
+                // ROS_INFO_THROTTLE(2, "Captured image at timestamp: %.6f, Frame interval: %.6f sec (FPS: %.2f)",
+                //                   current_time.toSec(), frame_time_diff, 1.0 / frame_time_diff);
+                // Convert OpenCV image to ROS image message
                 cv_bridge::CvImage cv_image;
                 cv_image.image = frame;
                 cv_image.encoding = sensor_msgs::image_encodings::BGR8;
@@ -135,6 +126,7 @@ void AdvertiseTopics() {
                 ros_image.header.stamp = current_time; // Use the time at which the image was captured
                 pub_image_raw_.publish(ros_image);
 
+                // Publish camera info
                 sensor_msgs::CameraInfo camera_info = cam_info_manager_->getCameraInfo();
                 camera_info.header.frame_id = camera_frame_id_;
                 camera_info.header.stamp = current_time; // Use the time at which the image was captured
