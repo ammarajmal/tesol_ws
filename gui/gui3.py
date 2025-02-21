@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
+import rosgraph
 
 # import subprocess
 import csv
@@ -482,38 +483,65 @@ class NodeGUI(ctk.CTk):
         # print(f'Data saved to {self.file_name}')
 
     def recall_data(self):
-        ''' Recalls the data '''
-        print('Recording Pose Data')
+        ''' Records data for all active cameras detected on the ROS network '''
+        print('Checking active topics on the ROS network...')
+        
+        # Get available topics from ROS
+        master = rosgraph.Master('/rostopic')
+        active_topics = master.getPublishedTopics('/')
+        
+        # Expected topics for the cameras
+        cam_topics = {
+            1: '/sony_cam1/aruco_detect_node/fiducial_transforms',
+            2: '/sony_cam2/aruco_detect_node/fiducial_transforms',
+            3: '/sony_cam3/aruco_detect_node/fiducial_transforms'
+        }
+        
+        # Find active camera topics
+        active_cams = [cam for cam, topic in cam_topics.items() if topic in [t[0] for t in active_topics]]
+        
+        if not active_cams:
+            print('No active camera topics found!')
+            return
+        
+        print(f'Active cameras detected: {active_cams}')
+        
+        # Proceed with recording
         self.record_data_param_update()
         print(f'File Name: {self.file_name}')
-        num, cams = self.check_running_cameras()
-        print(f'Number of running cameras: {num}, Cameras: {cams}')
-        if num == 1:
-            print('one one camera is running, and no time synch is being applied')
-            first_cam = cams[0]
-            self.record_data(first_cam)
-        if num == 2:
-            first_cam = cams[0]
-            second_cam = cams[1]
-            self.sub1 = message_filters.Subscriber(f'/sony_cam{first_cam}/aruco_detect_node/fiducial_transforms', FiducialTransformArray)
-            self.sub2 = message_filters.Subscriber(f'/sony_cam{second_cam}/aruco_detect_node/fiducial_transforms', FiducialTransformArray)
-            self.ats = message_filters.TimeSynchronizer([self.sub1, self.sub2], 10)
 
-            self.ats = message_filters.ApproximateTimeSynchronizer([self.sub1, self.sub2], 10, 0.01, allow_headerless=True)
+        if len(active_cams) == 1:
+            print('Only one camera is active, recording without time synchronization.')
+            self.record_data(active_cams[0])
+        elif len(active_cams) == 2:
+            print(f'Recording with ApproximateTimeSynchronizer for {active_cams}')
+            self.sub1 = message_filters.Subscriber(cam_topics[active_cams[0]], FiducialTransformArray)
+            self.sub2 = message_filters.Subscriber(cam_topics[active_cams[1]], FiducialTransformArray)
+            self.cam_first = active_cams[0]
+            self.cam_second = active_cams[1]
+            
+            self.ats = message_filters.ApproximateTimeSynchronizer([self.sub1, self.sub2], queue_size=10, slop=0.008, allow_headerless=True)
             self.ats.registerCallback(self.record_two_cams)
+            
             self.is_data_collection_active = True
             rospy.Timer(rospy.Duration(self.experiment_dur), self.stop_data_collection2, oneshot=True)
             self.collectected_data = []
-        if num == 3:
-            print('Recording Pose Data for 3 Cameras')
-            self.sub1 = message_filters.Subscriber(f'/sony_cam{cams[0]}/aruco_detect_node/fiducial_transforms', FiducialTransformArray)
-            self.sub2 = message_filters.Subscriber(f'/sony_cam{cams[1]}/aruco_detect_node/fiducial_transforms', FiducialTransformArray)
-            self.sub3 = message_filters.Subscriber(f'/sony_cam{cams[2]}/aruco_detect_node/fiducial_transforms', FiducialTransformArray)
-            self.ats = message_filters.ApproximateTimeSynchronizer([self.sub1, self.sub2, self.sub3], 10, 0.008, allow_headerless=True)
+        elif len(active_cams) == 3:
+            print(f'Recording with ApproximateTimeSynchronizer for all three cameras: {active_cams}')
+            self.sub1 = message_filters.Subscriber(cam_topics[active_cams[0]], FiducialTransformArray)
+            self.sub2 = message_filters.Subscriber(cam_topics[active_cams[1]], FiducialTransformArray)
+            self.sub3 = message_filters.Subscriber(cam_topics[active_cams[2]], FiducialTransformArray)
+            self.cam_first = active_cams[0]
+            self.cam_second = active_cams[1]
+            self.cam_third = active_cams[2]
+
+            self.ats = message_filters.ApproximateTimeSynchronizer([self.sub1, self.sub2, self.sub3], queue_size=10, slop=0.008, allow_headerless=True)
             self.ats.registerCallback(self.record_three_cams)
+            
             self.is_data_collection_active = True
             rospy.Timer(rospy.Duration(self.experiment_dur), self.stop_data_collection3, oneshot=True)
             self.collectected_data = []
+            
     def record_two_cams(self, msg1, msg2):
         if not self.is_data_collection_active:
             return
@@ -535,8 +563,24 @@ class NodeGUI(ctk.CTk):
         ''' Save the data from two cameras to a CSV file '''
         with open(self.file_name, 'w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(['Time (s)', 'Cam1 Fiducial ID', 'Cam1 Position X', 'Cam1 Position Y', 'Cam1 Position Z', 'Cam1 Rotation X', 'Cam1 Rotation Y', 'Cam1 Rotation Z', 'Cam1 Rotation W',
-                            'Cam2 Fiducial ID', 'Cam2 Position X', 'Cam2 Position Y', 'Cam2 Position Z', 'Cam2 Rotation X', 'Cam2 Rotation Y', 'Cam2 Rotation Z', 'Cam2 Rotation W'])
+            writer.writerow([
+                'Time (s)',
+                f'Cam{self.cam_first} Fiducial ID',
+                f'Cam{self.cam_first} Position X',
+                f'Cam{self.cam_first} Position Y',
+                f'Cam{self.cam_first} Position Z',
+                f'Cam{self.cam_first} Rotation X',
+                f'Cam{self.cam_first} Rotation Y',
+                f'Cam{self.cam_first} Rotation Z',
+                f'Cam{self.cam_first} Rotation W',
+                f'Cam{self.cam_second} Fiducial ID',
+                f'Cam{self.cam_second} Position X',
+                f'Cam{self.cam_second} Position Y',
+                f'Cam{self.cam_second} Position Z',
+                f'Cam{self.cam_second} Rotation X',
+                f'Cam{self.cam_second} Rotation Y',
+                f'Cam{self.cam_second} Rotation Z',
+                f'Cam{self.cam_second} Rotation W'])
             for data in self.collectected_data:
                 for i in range(len(data[1].transforms)):
                     cam1 = data[1].transforms[i]
@@ -579,9 +623,32 @@ class NodeGUI(ctk.CTk):
         '''Save the data from three cameras to a CSV file'''
         with open(self.file_name, 'w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(['Time (s)', 'Cam1 Fiducial ID', 'Cam1 Position X', 'Cam1 Position Y', 'Cam1 Position Z', 'Cam1 Rotation X', 'Cam1 Rotation Y', 'Cam1 Rotation Z', 'Cam1 Rotation W',
-                            'Cam2 Fiducial ID', 'Cam2 Position X', 'Cam2 Position Y', 'Cam2 Position Z', 'Cam2 Rotation X', 'Cam2 Rotation Y', 'Cam2 Rotation Z', 'Cam2 Rotation W',
-                            'Cam3 Fiducial ID', 'Cam3 Position X', 'Cam3 Position Y', 'Cam3 Position Z', 'Cam3 Rotation X', 'Cam3 Rotation Y', 'Cam3 Rotation Z', 'Cam3 Rotation W'])
+            writer.writerow([
+                'Time (s)',
+                f'Cam{self.cam_first} Fiducial ID',
+                f'Cam{self.cam_first} Position X',
+                f'Cam{self.cam_first} Position Y',
+                f'Cam{self.cam_first} Position Z',
+                f'Cam{self.cam_first} Rotation X',
+                f'Cam{self.cam_first} Rotation Y',
+                f'Cam{self.cam_first} Rotation Z',
+                f'Cam{self.cam_first} Rotation W',
+                f'Cam{self.cam_second} Fiducial ID',
+                f'Cam{self.cam_second} Position X',
+                f'Cam{self.cam_second} Position Y',
+                f'Cam{self.cam_second} Position Z',
+                f'Cam{self.cam_second} Rotation X',
+                f'Cam{self.cam_second} Rotation Y',
+                f'Cam{self.cam_second} Rotation Z',
+                f'Cam{self.cam_second} Rotation W',
+                f'Cam{self.cam_third} Fiducial ID',
+                f'Cam{self.cam_third} Position X',
+                f'Cam{self.cam_third} Position Y',
+                f'Cam{self.cam_third} Position Z',
+                f'Cam{self.cam_third} Rotation X',
+                f'Cam{self.cam_third} Rotation Y',
+                f'Cam{self.cam_third} Rotation Z',
+                f'Cam{self.cam_third} Rotation W'])
             for data in self.collectected_data:
                 for i in range(len(data[1].transforms)):
                     cam1 = data[1].transforms[i]

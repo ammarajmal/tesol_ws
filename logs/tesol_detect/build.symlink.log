@@ -1,13 +1,3 @@
-Symlinking /home/sitl3/tesol_ws/devel/share/tesol_detect/cmake/tesol_detectConfig-version.cmake
-Symlinking /home/sitl3/tesol_ws/devel/share/tesol_detect/cmake/tesol_detectConfig.cmake
-Symlinking /home/sitl3/tesol_ws/devel/lib/pkgconfig/tesol_detect.pc
-Cleaning: (/home/sitl2/tesol_ws/devel/.private/tesol_detect/cmake.lock, /home/sitl2/tesol_ws/devel/./cmake.lock)
-Cleaning: (/home/sitl2/tesol_ws/devel/.private/tesol_detect/share/tesol_detect/cmake/tesol_detectConfig-version.cmake, /home/sitl2/tesol_ws/devel/share/tesol_detect/cmake/tesol_detectConfig-version.cmake)
-Cleaning: (/home/sitl2/tesol_ws/devel/.private/tesol_detect/share/tesol_detect/cmake/tesol_detectConfig.cmake, /home/sitl2/tesol_ws/devel/share/tesol_detect/cmake/tesol_detectConfig.cmake)
-Cleaning: (/home/sitl2/tesol_ws/devel/.private/tesol_detect/lib/pkgconfig/tesol_detect.pc, /home/sitl2/tesol_ws/devel/lib/pkgconfig/tesol_detect.pc)
-Unlinking: /home/sitl2/tesol_ws/devel/share/tesol_detect/cmake/tesol_detectConfig-version.cmake
-Already unlinked: {}
-Unlinking: /home/sitl2/tesol_ws/devel/share/tesol_detect/cmake/tesol_detectConfig.cmake
-Already unlinked: {}
-Unlinking: /home/sitl2/tesol_ws/devel/lib/pkgconfig/tesol_detect.pc
-Already unlinked: {}
+Linked: (/home/sitl3/tesol_ws/devel/.private/tesol_detect/share/tesol_detect/cmake/tesol_detectConfig-version.cmake, /home/sitl3/tesol_ws/devel/share/tesol_detect/cmake/tesol_detectConfig-version.cmake)
+Linked: (/home/sitl3/tesol_ws/devel/.private/tesol_detect/share/tesol_detect/cmake/tesol_detectConfig.cmake, /home/sitl3/tesol_ws/devel/share/tesol_detect/cmake/tesol_detectConfig.cmake)
+Linked: (/home/sitl3/tesol_ws/devel/.private/tesol_detect/lib/pkgconfig/tesol_detect.pc, /home/sitl3/tesol_ws/devel/lib/pkgconfig/tesol_detect.pc)
