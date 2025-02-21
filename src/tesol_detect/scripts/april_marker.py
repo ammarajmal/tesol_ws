@@ -98,7 +98,7 @@ class AprilTagDetector:
         # Compute processing delay
         current_time = rospy.Time.now()
         processing_delay = (current_time - img_timestamp).to_sec()
-        rospy.loginfo(f"[{img_timestamp.to_sec()}] Processing AprilTag detections... (Processing delay: {processing_delay:.3f} sec)")
+        # rospy.loginfo(f"[{img_timestamp.to_sec()}] Processing AprilTag detections... (Processing delay: {processing_delay:.3f} sec)")
 
         tag_size = self.tag_size
         object_points = np.array([
@@ -133,11 +133,11 @@ class AprilTagDetector:
                         axis_length = self.tag_size / 2
                         cv2.drawFrameAxes(image, self.camera_matrix, self.dist_coeffs, rvec, tvec, axis_length)
 
-                    rospy.loginfo(f"[{img_timestamp.to_sec()}] Detected AprilTag ID: {detection.tag_id}, Position: ({tvec[0]}, {tvec[1]}, {tvec[2]})")
+                    # rospy.loginfo(f"[{img_timestamp.to_sec()}] Detected AprilTag ID: {detection.tag_id}, Position: ({tvec[0]}, {tvec[1]}, {tvec[2]})")
 
         if fiducial_array_msg.transforms:
             self.pose_pub.publish(fiducial_array_msg)
-            rospy.loginfo(f"[{img_timestamp.to_sec()}] Published {len(fiducial_array_msg.transforms)} AprilTag detections.")
+            # rospy.loginfo(f"[{img_timestamp.to_sec()}] Published {len(fiducial_array_msg.transforms)} AprilTag detections.")
         else:
             rospy.logwarn(f"[{img_timestamp.to_sec()}] No AprilTags detected.")
 

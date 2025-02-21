@@ -1,4 +1,4 @@
-prefix=/home/sitl2/tesol_ws/devel/.private/tesol_detect
+prefix=/home/sitl3/tesol_ws/devel/.private/tesol_detect
 
 Name: tesol_detect
 Description: Description of tesol_detect

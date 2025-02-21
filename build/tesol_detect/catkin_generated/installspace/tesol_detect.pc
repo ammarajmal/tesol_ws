@@ -1,4 +1,4 @@
-prefix=/home/sitl2/tesol_ws/install
+prefix=/home/sitl3/tesol_ws/install
 
 Name: tesol_detect
 Description: Description of tesol_detect

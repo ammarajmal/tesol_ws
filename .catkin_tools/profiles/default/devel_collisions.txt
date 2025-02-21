@@ -1,4 +1,5 @@
 /home/tesol/tesol/devel/./cmake.lock 179
 /home/tesol/tesol_ws/devel/./cmake.lock 689
 /home/ammar/tesol_ws/devel/./cmake.lock 912
-/home/sitl2/tesol_ws/devel/./cmake.lock 48
+/home/sitl2/tesol_ws/devel/./cmake.lock 35
+/home/sitl3/tesol_ws/devel/./cmake.lock 12
