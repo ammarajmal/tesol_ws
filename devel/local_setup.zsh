@@ -1,1 +1,1 @@
-/home/ammar/tesol_ws/devel/.private/catkin_tools_prebuild/local_setup.zsh
+/home/nuc1/tesol_ws/devel/.private/catkin_tools_prebuild/local_setup.zsh

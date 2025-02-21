@@ -55,10 +55,10 @@ class NodeGUI(ctk.CTk):
         self.detect2_status = False
         self.detect3_status = False
 
-        self.experiment_name = 'DC0'
-        self.file_name = 'Cam2'
+        self.experiment_name = 'TS1'
+        self.file_name = 'Cam'
         self.experiment_dur = 10 # seconds
-        self.dir_name = '26NOV'
+        self.dir_name = '21Feb'
         self.exp_name_var = tk.StringVar(self, self.experiment_name)
         self.exp_dur_var = tk.StringVar(self, self.experiment_dur)
         self.middle_second_center_dir_var = tk.StringVar(self, self.dir_name)
@@ -1342,7 +1342,7 @@ class NodeGUI(ctk.CTk):
                 self.left_detect3_button.configure(fg_color=themes['blue'][0])
                 self.detect3_status = False
 if __name__ == "__main__":
-    rospy.init_node('fin_gui_NUC1', anonymous=False)
+    rospy.init_node('fin_gui_NUC2', anonymous=False)
     # Set logging level to INFO or higher to suppress DEBUG messages
     rospy.set_param('/rosconsole/config/logger_level', 'INFO')
     app = NodeGUI()
