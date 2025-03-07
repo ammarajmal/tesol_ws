@@ -1,8 +1,0 @@
-prefix=/home/sitl3/tesol_ws/install
-
-Name: tesol_detect
-Description: Description of tesol_detect
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 
