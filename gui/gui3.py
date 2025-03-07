@@ -58,8 +58,8 @@ class NodeGUI(ctk.CTk):
 
         self.experiment_name = 'TS1'
         self.file_name = 'Cam'
-        self.experiment_dur = 10 # seconds
-        self.dir_name = '21Feb'
+        self.experiment_dur = 125 # seconds
+        self.dir_name = '06Mar'
         self.exp_name_var = tk.StringVar(self, self.experiment_name)
         self.exp_dur_var = tk.StringVar(self, self.experiment_dur)
         self.middle_second_center_dir_var = tk.StringVar(self, self.dir_name)
@@ -481,8 +481,82 @@ class NodeGUI(ctk.CTk):
         #                 for msg in data[1].transforms:
         #                     writer.writerow([data[0], msg.fiducial_id, msg.transform.translation.x, msg.transform.translation.y, msg.transform.translation.z, msg.transform.rotation.x, msg.transform.rotation.y, msg.transform.rotation.z, msg.transform.rotation.w])
         # print(f'Data saved to {self.file_name}')
-
     def recall_data(self):
+        ''' Records data for all active cameras detected on the ROS network '''
+        print('Checking active topics on the ROS network...')
+        
+        # Get available topics from ROS
+        master = rosgraph.Master('/rostopic')
+        active_topics = master.getPublishedTopics('/')
+        
+        # Expected topics for the cameras
+        cam_topics = {
+            1: '/sony_cam1/aruco_detect_node/fiducial_transforms',
+            2: '/sony_cam2/aruco_detect_node/fiducial_transforms',
+            3: '/sony_cam3/aruco_detect_node/fiducial_transforms'
+        }
+        
+        # Find active camera topics
+        active_cams = [cam for cam, topic in cam_topics.items() if topic in [t[0] for t in active_topics]]
+        
+        if not active_cams:
+            print('No active camera topics found!')
+            return
+        
+        print(f'Active cameras detected: {active_cams}')
+        
+        # Proceed with recording
+        self.record_data_param_update()
+        print(f'Data will be saved separately for each camera.')
+        
+        # Subscribe to all available cameras without synchronization
+        self.subscribers = []
+        self.collectected_data = {cam: [] for cam in active_cams}
+        
+        for cam in active_cams:
+            sub = rospy.Subscriber(cam_topics[cam], FiducialTransformArray, self.record_raw_data, callback_args=cam)
+            self.subscribers.append(sub)
+        
+        self.is_data_collection_active = True
+        
+        rospy.Timer(rospy.Duration(self.experiment_dur), self.stop_raw_data_collection, oneshot=True)
+    
+    def record_raw_data(self, msg, cam_num):
+        if not self.is_data_collection_active:
+            return
+        
+        timestamp = msg.header.stamp.to_sec()
+        for transform in msg.transforms:
+            self.collectected_data[cam_num].append([
+                timestamp, transform.fiducial_id,
+                transform.transform.translation.x, transform.transform.translation.y, transform.transform.translation.z,
+                transform.transform.rotation.x, transform.transform.rotation.y, transform.transform.rotation.z, transform.transform.rotation.w
+            ])
+    
+    def stop_raw_data_collection(self, event):
+        self.is_data_collection_active = False
+        for sub in self.subscribers:
+            sub.unregister()
+        self.save_to_csv_raw()
+    
+    def save_to_csv_raw(self):
+        ''' Saves the raw data separately for each camera '''
+        for cam, data in self.collectected_data.items():
+            file_name = self.file_name.replace('.csv', f'_cam{cam}.csv')
+            with open(file_name, 'w', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow([
+                    'Time (s)', 'Fiducial ID',
+                    'Position X', 'Position Y', 'Position Z',
+                    'Rotation X', 'Rotation Y', 'Rotation Z', 'Rotation W'
+                ])
+                
+                for entry in data:
+                    writer.writerow(entry)
+            
+            print(f'Raw data for Camera {cam} saved to {file_name}')
+
+    def recall_data_old_with_synch(self):
         ''' Records data for all active cameras detected on the ROS network '''
         print('Checking active topics on the ROS network...')
         
