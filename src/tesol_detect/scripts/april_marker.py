@@ -27,7 +27,17 @@ class AprilTagDetector:
         self.initial_translation_vector = None
 
         # AprilTag Detector
-        self.detector = Detector(families=self.tag_family)
+        # self.detector = Detector(families=self.tag_family)
+        self.detector = Detector(
+            families=self.tag_family,
+            nthreads=4,
+            quad_decimate=1.0,
+            quad_sigma=0.0,
+            refine_edges=1,
+            decode_sharpening=0.25,
+            debug=0
+        )
+
 
         # ROS subscribers and publishers
         self.image_sub = rospy.Subscriber(f"/{self.camera_name}/image_raw", Image, self.image_callback)
