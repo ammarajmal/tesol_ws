@@ -56,10 +56,10 @@ class NodeGUI(ctk.CTk):
         self.detect2_status = False
         self.detect3_status = False
 
-        self.experiment_name = 'TS1'
+        self.experiment_name = 'Cam3Sin'
         self.file_name = 'Cam'
-        self.experiment_dur = 125 # seconds
-        self.dir_name = '06Mar'
+        self.experiment_dur = 10 # seconds
+        self.dir_name = 'UCer'
         self.exp_name_var = tk.StringVar(self, self.experiment_name)
         self.exp_dur_var = tk.StringVar(self, self.experiment_dur)
         self.middle_second_center_dir_var = tk.StringVar(self, self.dir_name)
