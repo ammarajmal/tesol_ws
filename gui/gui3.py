@@ -83,9 +83,9 @@ class NodeGUI(ctk.CTk):
 
         self.is_detection_active = False
         self.is_data_collection_active = False
-        self.collectected_data_world = []
-        self.collectected_data_camera = []
-        self.collectected_data_displacement = []
+        self.collected_data_world = []
+        self.collected_data_camera = []
+        self.collected_data_displacement = []
 
 
         self.board_size = '6x9' # default board size for calibration
@@ -160,10 +160,7 @@ class NodeGUI(ctk.CTk):
         self.create_right_bottom_frame_widgets()
     def create_right_bottom_frame_widgets(self)-> None:
         ''' creates button for camera 1 saving data and plotting data'''
-        # self.cam_custom_record_button = ctk.CTkButton(self.right_bottom_frame, text='cam 2 comparison', command=lambda:self.custom_cam_record(2))
-        # self.cam_custom_plot_button = ctk.CTkButton(self.right_bottom_frame, text='cam 2 plot', command=self.plot_data_custom)
-        # self.cam_custom_record_button.place(relx=0.5, rely=0.1, anchor='n')
-        # self.cam_custom_plot_button.place(relx=0.5, rely=0.3, anchor='n')
+
     def custom_cam_record(self, cam_num=1):
         ''' Records the data '''
         rospy.loginfo(f'Recording Pose Data for Camera {cam_num}')
@@ -185,7 +182,7 @@ class NodeGUI(ctk.CTk):
         timestamp = rospy.get_time()
         for transform in msg.transforms:
             print(f'Fiducial ID: {transform.fiducial_id}, Position: ({transform.transform.translation.x}, {transform.transform.translation.y}, {transform.transform.translation.z}), Rotation: ({transform.transform.rotation.x}, {transform.transform.rotation.y}, {transform.transform.rotation.z}, {transform.transform.rotation.w})')
-            self.collectected_data_world.append([timestamp, transform.fiducial_id, transform.transform.translation.x,
+            self.collected_data_world.append([timestamp, transform.fiducial_id, transform.transform.translation.x,
                                                  transform.transform.translation.y, transform.transform.translation.z,
                                                  transform.transform.rotation.x, transform.transform.rotation.y,
                                                  transform.transform.rotation.z, transform.transform.rotation.w])
@@ -195,7 +192,7 @@ class NodeGUI(ctk.CTk):
             return
         timestamp = rospy.get_time()
         for transform in msg.transforms:
-            self.collectected_data_camera.append([timestamp, transform.fiducial_id, transform.transform.translation.x,
+            self.collected_data_camera.append([timestamp, transform.fiducial_id, transform.transform.translation.x,
                                                   transform.transform.translation.y, transform.transform.translation.z,
                                                   transform.transform.rotation.x, transform.transform.rotation.y,
                                                   transform.transform.rotation.z, transform.transform.rotation.w])
@@ -205,7 +202,7 @@ class NodeGUI(ctk.CTk):
             return
         timestamp = rospy.get_time()
         for transform in msg.transforms:
-            self.collectected_data_displacement.append([timestamp, transform.fiducial_id, transform.transform.translation.x,
+            self.collected_data_displacement.append([timestamp, transform.fiducial_id, transform.transform.translation.x,
                                                         transform.transform.translation.y, transform.transform.translation.z,
                                                         transform.transform.rotation.x, transform.transform.rotation.y,
                                                         transform.transform.rotation.z, transform.transform.rotation.w])
@@ -231,12 +228,12 @@ class NodeGUI(ctk.CTk):
                             'Displacement Rotation W', 'Displacement Rotation X', 'Displacement Rotation Y', 'Displacement Rotation Z'])
 
             # Ensure all lists have the same length by filling missing values with None
-            max_length = max(len(self.collectected_data_world), len(self.collectected_data_camera), len(self.collectected_data_displacement))
+            max_length = max(len(self.collected_data_world), len(self.collected_data_camera), len(self.collected_data_displacement))
 
             for i in range(max_length):
-                world_data = self.collectected_data_world[i] if i < len(self.collectected_data_world) else [None] * 9
-                camera_data = self.collectected_data_camera[i] if i < len(self.collectected_data_camera) else [None] * 9
-                displacement_data = self.collectected_data_displacement[i] if i < len(self.collectected_data_displacement) else [None] * 9
+                world_data = self.collected_data_world[i] if i < len(self.collected_data_world) else [None] * 9
+                camera_data = self.collected_data_camera[i] if i < len(self.collected_data_camera) else [None] * 9
+                displacement_data = self.collected_data_displacement[i] if i < len(self.collected_data_displacement) else [None] * 9
 
                 # Assuming all data points share the same timestamp and fiducial ID, otherwise, adjust accordingly
                 timestamp = world_data[0] if world_data[0] is not None else camera_data[0] if camera_data[0] is not None else displacement_data[0]
@@ -418,7 +415,7 @@ class NodeGUI(ctk.CTk):
         self.sub1 = rospy.Subscriber(f'/sony_cam{cam_num}/aruco_detect_node/fiducial_transforms', FiducialTransformArray, self.record_single)
         self.is_data_collection_active = True
         rospy.Timer(rospy.Duration(self.experiment_dur), self.stop_data_collection, oneshot=True)
-        self.collectected_data = []
+        self.collected_data = []
 
     def record_single(self, msg):
         if not self.is_data_collection_active:
@@ -428,7 +425,7 @@ class NodeGUI(ctk.CTk):
         ros_header_timestamp = msg.header.stamp.to_sec()  # ROS header timestamp
 
         for transform in msg.transforms:
-            self.collectected_data.append([
+            self.collected_data.append([
                 system_timestamp,  # Raw system time
                 ros_header_timestamp,  # ROS header time
                 transform.fiducial_id,
@@ -449,7 +446,7 @@ class NodeGUI(ctk.CTk):
         # # print the x and y position of the first fiducial from the msg to the console
         # print(f'Fiducial ID: {msg.transforms[0].fiducial_id}, Position: ({msg.transforms[0].transform.translation.x}, {msg.transforms[0].transform.translation.y}, {msg.transforms[0].transform.translation.z}), Rotation: ({msg.transforms[0].transform.rotation.x}, {msg.transforms[0].transform.rotation.y}, {msg.transforms[0].transform.rotation.z}, {msg.transforms[0].transform.rotation.w})')
         
-        # self.collectected_data.append([timestamp, msg])
+        # self.collected_data.append([timestamp, msg])
     def stop_data_collection(self, event):
         self.is_data_collection_active = False
         self.sub1.unregister()
@@ -472,16 +469,16 @@ class NodeGUI(ctk.CTk):
             ])
             
             # 🔹 Make sure the loop is inside the 'with open' block
-            for data in self.collectected_data:
+            for data in self.collected_data:
                 writer.writerow(data)
         
         print(f'Data saved to {self.file_name}')  # Confirm that the data was saved
 
-        # for data in self.collectected_data:
+        # for data in self.collected_data:
         #                 for msg in data[1].transforms:
         #                     writer.writerow([data[0], msg.fiducial_id, msg.transform.translation.x, msg.transform.translation.y, msg.transform.translation.z, msg.transform.rotation.x, msg.transform.rotation.y, msg.transform.rotation.z, msg.transform.rotation.w])
         # print(f'Data saved to {self.file_name}')
-    def recall_data(self):
+    def recall_data_with_no_synch(self):
         ''' Records data for all active cameras detected on the ROS network '''
         print('Checking active topics on the ROS network...')
         
@@ -511,7 +508,7 @@ class NodeGUI(ctk.CTk):
         
         # Subscribe to all available cameras without synchronization
         self.subscribers = []
-        self.collectected_data = {cam: [] for cam in active_cams}
+        self.collected_data = {cam: [] for cam in active_cams}
         
         for cam in active_cams:
             sub = rospy.Subscriber(cam_topics[cam], FiducialTransformArray, self.record_raw_data, callback_args=cam)
@@ -527,7 +524,7 @@ class NodeGUI(ctk.CTk):
         
         timestamp = msg.header.stamp.to_sec()
         for transform in msg.transforms:
-            self.collectected_data[cam_num].append([
+            self.collected_data[cam_num].append([
                 timestamp, transform.fiducial_id,
                 transform.transform.translation.x, transform.transform.translation.y, transform.transform.translation.z,
                 transform.transform.rotation.x, transform.transform.rotation.y, transform.transform.rotation.z, transform.transform.rotation.w
@@ -541,7 +538,7 @@ class NodeGUI(ctk.CTk):
     
     def save_to_csv_raw(self):
         ''' Saves the raw data separately for each camera '''
-        for cam, data in self.collectected_data.items():
+        for cam, data in self.collected_data.items():
             file_name = self.file_name.replace('.csv', f'_cam{cam}.csv')
             with open(file_name, 'w', newline='') as file:
                 writer = csv.writer(file)
@@ -556,7 +553,7 @@ class NodeGUI(ctk.CTk):
             
             print(f'Raw data for Camera {cam} saved to {file_name}')
 
-    def recall_data_old_with_synch(self):
+    def recall_data(self):
         ''' Records data for all active cameras detected on the ROS network '''
         print('Checking active topics on the ROS network...')
         
@@ -599,7 +596,7 @@ class NodeGUI(ctk.CTk):
             
             self.is_data_collection_active = True
             rospy.Timer(rospy.Duration(self.experiment_dur), self.stop_data_collection2, oneshot=True)
-            self.collectected_data = []
+            self.collected_data = []
         elif len(active_cams) == 3:
             print(f'Recording with ApproximateTimeSynchronizer for all three cameras: {active_cams}')
             self.sub1 = message_filters.Subscriber(cam_topics[active_cams[0]], FiducialTransformArray)
@@ -614,7 +611,7 @@ class NodeGUI(ctk.CTk):
             
             self.is_data_collection_active = True
             rospy.Timer(rospy.Duration(self.experiment_dur), self.stop_data_collection3, oneshot=True)
-            self.collectected_data = []
+            self.collected_data = []
             
     def record_two_cams(self, msg1, msg2):
         if not self.is_data_collection_active:
@@ -622,11 +619,11 @@ class NodeGUI(ctk.CTk):
         timestamp = rospy.get_time()
         # Handle missing messages
         if msg1.transforms and msg2.transforms:
-            self.collectected_data.append([timestamp, msg1, msg2])
+            self.collected_data.append([timestamp, msg1, msg2])
         elif msg1.transforms:
-            self.collectected_data.append([timestamp, msg1, None])
+            self.collected_data.append([timestamp, msg1, None])
         elif msg2.transforms:
-            self.collectected_data.append([timestamp, None, msg2])
+            self.collected_data.append([timestamp, None, msg2])
 
     def stop_data_collection2(self, event):
         self.is_data_collection_active = False
@@ -655,7 +652,7 @@ class NodeGUI(ctk.CTk):
                 f'Cam{self.cam_second} Rotation Y',
                 f'Cam{self.cam_second} Rotation Z',
                 f'Cam{self.cam_second} Rotation W'])
-            for data in self.collectected_data:
+            for data in self.collected_data:
                 for i in range(len(data[1].transforms)):
                     cam1 = data[1].transforms[i]
                     cam2 = data[2].transforms[i] if i < len(data[2].transforms) else None
@@ -664,76 +661,202 @@ class NodeGUI(ctk.CTk):
                         cam2.fiducial_id if cam2 else '', cam2.transform.translation.x if cam2 else '', cam2.transform.translation.y if cam2 else '', cam2.transform.translation.z if cam2 else '', cam2.transform.rotation.x if cam2 else '', cam2.transform.rotation.y if cam2 else '', cam2.transform.rotation.z if cam2 else '', cam2.transform.rotation.w if cam2 else '']
                     writer.writerow(row)
         print(f'Data saved to {self.file_name}')
-    
+
     def record_three_cams(self, msg1, msg2, msg3):
         if not self.is_data_collection_active:
             return
+        try:
+            # Extract synchronized timestamp from message headers
+            # timestamp = msg1.header.stamp.to_sec()
+            timestamp = None
+            if msg1: timestamp = msg1.header.stamp.to_sec()
+            elif msg2: timestamp = msg2.header.stamp.to_sec()
+            elif msg3: timestamp = msg3.header.stamp.to_sec()
+
+            # Handling missing messages: Use `None` for missing data
+            cam1_data = msg1.transforms if msg1.transforms else [None]
+            cam2_data = msg2.transforms if msg2.transforms else [None]
+            cam3_data = msg3.transforms if msg3.transforms else [None]
+        except AttributeError as e:
+            rospy.logwarn(f"Error reading messages: {e}")
+            return  # Skip this iteration if an error occurs
+        for i in range(max(len(cam1_data), len(cam2_data), len(cam3_data))):
+            cam1 = cam1_data[i] if i < len(cam1_data) else None
+            cam2 = cam2_data[i] if i < len(cam2_data) else None
+            cam3 = cam3_data[i] if i < len(cam3_data) else None
+
+            # Collect data as dictionary for DataFrame
+            self.collected_data.append({
+                'Time (s)': timestamp,
+                'Cam1_Fiducial_ID': cam1.fiducial_id if cam1 else np.nan,
+                'Cam1_X': cam1.transform.translation.x if cam1 else np.nan,
+                'Cam1_Y': cam1.transform.translation.y if cam1 else np.nan,
+                'Cam1_Z': cam1.transform.translation.z if cam1 else np.nan,
+                'Cam1_RotX': cam1.transform.rotation.x if cam1 else np.nan,
+                'Cam1_RotY': cam1.transform.rotation.y if cam1 else np.nan,
+                'Cam1_RotZ': cam1.transform.rotation.z if cam1 else np.nan,
+                'Cam1_RotW': cam1.transform.rotation.w if cam1 else np.nan,
+
+                'Cam2_Fiducial_ID': cam2.fiducial_id if cam2 else np.nan,
+                'Cam2_X': cam2.transform.translation.x if cam2 else np.nan,
+                'Cam2_Y': cam2.transform.translation.y if cam2 else np.nan,
+                'Cam2_Z': cam2.transform.translation.z if cam2 else np.nan,
+                'Cam2_RotX': cam2.transform.rotation.x if cam2 else np.nan,
+                'Cam2_RotY': cam2.transform.rotation.y if cam2 else np.nan,
+                'Cam2_RotZ': cam2.transform.rotation.z if cam2 else np.nan,
+                'Cam2_RotW': cam2.transform.rotation.w if cam2 else np.nan,
+
+                'Cam3_Fiducial_ID': cam3.fiducial_id if cam3 else np.nan,
+                'Cam3_X': cam3.transform.translation.x if cam3 else np.nan,
+                'Cam3_Y': cam3.transform.translation.y if cam3 else np.nan,
+                'Cam3_Z': cam3.transform.translation.z if cam3 else np.nan,
+                'Cam3_RotX': cam3.transform.rotation.x if cam3 else np.nan,
+                'Cam3_RotY': cam3.transform.rotation.y if cam3 else np.nan,
+                'Cam3_RotZ': cam3.transform.rotation.z if cam3 else np.nan,
+                'Cam3_RotW': cam3.transform.rotation.w if cam3 else np.nan
+            })
+
+    
+    # def record_three_cams(self, msg1, msg2, msg3):
+    #     if not self.is_data_collection_active:
+    #         return
             
-        timestamp = rospy.get_time()
-        if msg1.transforms and msg2.transforms and msg3.transforms:
-            self.collectected_data.append([timestamp, msg1, msg2, msg3])
-        elif msg1.transforms and msg2.transforms:
-            self.collectected_data.append([timestamp, msg1, msg2, None])
-        elif msg1.transforms and msg3.transforms:
-            self.collectected_data.append([timestamp, msg1, None, msg3])
-        elif msg2.transforms and msg3.transforms:
-            self.collectected_data.append([timestamp, None, msg2, msg3])
-        elif msg1.transforms:
-            self.collectected_data.append([timestamp, msg1, None, None])
-        elif msg2.transforms:
-            self.collectected_data.append([timestamp, None, msg2, None])
-        elif msg3.transforms:
-            self.collectected_data.append([timestamp, None, None, msg3])
-        else:
-            return
+    #     # timestamp = rospy.get_time()
+    #     # Extract synchronized timestamp from message headers
+    #     timestamp = msg1.header.stamp.to_sec()
+    #     if msg1.transforms and msg2.transforms and msg3.transforms:
+    #         self.collected_data.append([timestamp, msg1, msg2, msg3])
+    #     elif msg1.transforms and msg2.transforms:
+    #         self.collected_data.append([timestamp, msg1, msg2, None])
+    #     elif msg1.transforms and msg3.transforms:
+    #         self.collected_data.append([timestamp, msg1, None, msg3])
+    #     elif msg2.transforms and msg3.transforms:
+    #         self.collected_data.append([timestamp, None, msg2, msg3])
+    #     elif msg1.transforms:
+    #         self.collected_data.append([timestamp, msg1, None, None])
+    #     elif msg2.transforms:
+    #         self.collected_data.append([timestamp, None, msg2, None])
+    #     elif msg3.transforms:
+    #         self.collected_data.append([timestamp, None, None, msg3])
+    #     else:
+    #         return
         
     def stop_data_collection3(self, event):
         self.is_data_collection_active = False
-        self.sub1.unregister()
-        self.sub2.unregister()
-        self.sub3.unregister()
+        # self.sub1.unregister()
+        # self.sub2.unregister()
+        # self.sub3.unregister()
+        if self.sub1: self.sub1.unregister()
+        if self.sub2: self.sub2.unregister()
+        if self.sub3: self.sub3.unregister()
+
         self.save_to_csv3()
+
+
     def save_to_csv3(self):
-        '''Save the data from three cameras to a CSV file'''
-        with open(self.file_name, 'w', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow([
-                'Time (s)',
-                f'Cam{self.cam_first} Fiducial ID',
-                f'Cam{self.cam_first} Position X',
-                f'Cam{self.cam_first} Position Y',
-                f'Cam{self.cam_first} Position Z',
-                f'Cam{self.cam_first} Rotation X',
-                f'Cam{self.cam_first} Rotation Y',
-                f'Cam{self.cam_first} Rotation Z',
-                f'Cam{self.cam_first} Rotation W',
-                f'Cam{self.cam_second} Fiducial ID',
-                f'Cam{self.cam_second} Position X',
-                f'Cam{self.cam_second} Position Y',
-                f'Cam{self.cam_second} Position Z',
-                f'Cam{self.cam_second} Rotation X',
-                f'Cam{self.cam_second} Rotation Y',
-                f'Cam{self.cam_second} Rotation Z',
-                f'Cam{self.cam_second} Rotation W',
-                f'Cam{self.cam_third} Fiducial ID',
-                f'Cam{self.cam_third} Position X',
-                f'Cam{self.cam_third} Position Y',
-                f'Cam{self.cam_third} Position Z',
-                f'Cam{self.cam_third} Rotation X',
-                f'Cam{self.cam_third} Rotation Y',
-                f'Cam{self.cam_third} Rotation Z',
-                f'Cam{self.cam_third} Rotation W'])
-            for data in self.collectected_data:
-                for i in range(len(data[1].transforms)):
-                    cam1 = data[1].transforms[i]
-                    cam2 = data[2].transforms[i] if i < len(data[2].transforms) else None
-                    cam3 = data[3].transforms[i] if i < len(data[3].transforms) else None
-                    row = [data[0],
-                        cam1.fiducial_id, cam1.transform.translation.x, cam1.transform.translation.y, cam1.transform.translation.z, cam1.transform.rotation.x, cam1.transform.rotation.y, cam1.transform.rotation.z, cam1.transform.rotation.w,
-                        cam2.fiducial_id if cam2 else '', cam2.transform.translation.x if cam2 else '', cam2.transform.translation.y if cam2 else '', cam2.transform.translation.z if cam2 else '', cam2.transform.rotation.x if cam2 else '', cam2.transform.rotation.y if cam2 else '', cam2.transform.rotation.z if cam2 else '', cam2.transform.rotation.w if cam2 else '',
-                        cam3.fiducial_id if cam3 else '', cam3.transform.translation.x if cam3 else '', cam3.transform.translation.y if cam3 else '', cam3.transform.translation.z if cam3 else '', cam3.transform.rotation.x if cam3 else '', cam3.transform.rotation.y if cam3 else '', cam3.transform.rotation.z if cam3 else '', cam3.transform.rotation.w if cam3 else '']
-                    writer.writerow(row)
-        print(f'Data saved to {self.file_name}')
+        '''Save the data from three cameras to a CSV file with interpolation'''
+
+        # Ensure collected_data is not empty
+        if not self.collected_data:
+            print("No data collected. Skipping CSV save.")
+            return
+
+        # Define column names
+        columns = [
+            'Time (s)',
+            f'Cam{self.cam_first} Fiducial ID', f'Cam{self.cam_first} Position X', f'Cam{self.cam_first} Position Y', f'Cam{self.cam_first} Position Z',
+            f'Cam{self.cam_first} Rotation X', f'Cam{self.cam_first} Rotation Y', f'Cam{self.cam_first} Rotation Z', f'Cam{self.cam_first} Rotation W',
+            f'Cam{self.cam_second} Fiducial ID', f'Cam{self.cam_second} Position X', f'Cam{self.cam_second} Position Y', f'Cam{self.cam_second} Position Z',
+            f'Cam{self.cam_second} Rotation X', f'Cam{self.cam_second} Rotation Y', f'Cam{self.cam_second} Rotation Z', f'Cam{self.cam_second} Rotation W',
+            f'Cam{self.cam_third} Fiducial ID', f'Cam{self.cam_third} Position X', f'Cam{self.cam_third} Position Y', f'Cam{self.cam_third} Position Z',
+            f'Cam{self.cam_third} Rotation X', f'Cam{self.cam_third} Rotation Y', f'Cam{self.cam_third} Rotation Z', f'Cam{self.cam_third} Rotation W'
+        ]
+
+        # Create an empty list to store the processed data
+        processed_data = []
+
+        for data in self.collected_data:
+            # Ensure the data is a dictionary before accessing keys
+            if not isinstance(data, dict):
+                print("Error: Unexpected data format. Skipping this entry.")
+                continue
+
+            timestamp = data.get('Time (s)', np.nan)  # Get timestamp safely
+
+            # Handling missing transformations for each camera
+            cam1 = data.get('Cam1_Fiducial_ID', np.nan)
+            cam2 = data.get('Cam2_Fiducial_ID', np.nan)
+            cam3 = data.get('Cam3_Fiducial_ID', np.nan)
+
+            row = [
+                timestamp,
+                cam1, data.get('Cam1_X', np.nan), data.get('Cam1_Y', np.nan), data.get('Cam1_Z', np.nan),
+                data.get('Cam1_RotX', np.nan), data.get('Cam1_RotY', np.nan), data.get('Cam1_RotZ', np.nan), data.get('Cam1_RotW', np.nan),
+                cam2, data.get('Cam2_X', np.nan), data.get('Cam2_Y', np.nan), data.get('Cam2_Z', np.nan),
+                data.get('Cam2_RotX', np.nan), data.get('Cam2_RotY', np.nan), data.get('Cam2_RotZ', np.nan), data.get('Cam2_RotW', np.nan),
+                cam3, data.get('Cam3_X', np.nan), data.get('Cam3_Y', np.nan), data.get('Cam3_Z', np.nan),
+                data.get('Cam3_RotX', np.nan), data.get('Cam3_RotY', np.nan), data.get('Cam3_RotZ', np.nan), data.get('Cam3_RotW', np.nan)
+            ]
+            processed_data.append(row)
+
+        # Convert the collected data into a Pandas DataFrame
+        df = pd.DataFrame(processed_data, columns=columns)
+
+        # Check if the DataFrame is empty
+        if df.empty:
+            print("No valid data to save. Skipping CSV write.")
+            return
+
+        # Interpolate missing values linearly
+        df.interpolate(method='linear', limit_direction='forward', inplace=True)
+
+        # Save to CSV file
+        df.to_csv(self.file_name, index=False)
+
+        print(f'Data saved to {self.file_name} with interpolated missing values')
+
+    # def save_to_csv3(self):
+    #     '''Save the data from three cameras to a CSV file'''
+    #     with open(self.file_name, 'w', newline='') as file:
+    #         writer = csv.writer(file)
+    #         writer.writerow([
+    #             'Time (s)',
+    #             f'Cam{self.cam_first} Fiducial ID',
+    #             f'Cam{self.cam_first} Position X',
+    #             f'Cam{self.cam_first} Position Y',
+    #             f'Cam{self.cam_first} Position Z',
+    #             f'Cam{self.cam_first} Rotation X',
+    #             f'Cam{self.cam_first} Rotation Y',
+    #             f'Cam{self.cam_first} Rotation Z',
+    #             f'Cam{self.cam_first} Rotation W',
+    #             f'Cam{self.cam_second} Fiducial ID',
+    #             f'Cam{self.cam_second} Position X',
+    #             f'Cam{self.cam_second} Position Y',
+    #             f'Cam{self.cam_second} Position Z',
+    #             f'Cam{self.cam_second} Rotation X',
+    #             f'Cam{self.cam_second} Rotation Y',
+    #             f'Cam{self.cam_second} Rotation Z',
+    #             f'Cam{self.cam_second} Rotation W',
+    #             f'Cam{self.cam_third} Fiducial ID',
+    #             f'Cam{self.cam_third} Position X',
+    #             f'Cam{self.cam_third} Position Y',
+    #             f'Cam{self.cam_third} Position Z',
+    #             f'Cam{self.cam_third} Rotation X',
+    #             f'Cam{self.cam_third} Rotation Y',
+    #             f'Cam{self.cam_third} Rotation Z',
+    #             f'Cam{self.cam_third} Rotation W'])
+    #         for data in self.collected_data:
+    #             for i in range(len(data[1].transforms)):
+    #                 cam1 = data[1].transforms[i]
+    #                 cam2 = data[2].transforms[i] if i < len(data[2].transforms) else None
+    #                 cam3 = data[3].transforms[i] if i < len(data[3].transforms) else None
+    #                 row = [data[0],
+    #                     cam1.fiducial_id, cam1.transform.translation.x, cam1.transform.translation.y, cam1.transform.translation.z, cam1.transform.rotation.x, cam1.transform.rotation.y, cam1.transform.rotation.z, cam1.transform.rotation.w,
+    #                     cam2.fiducial_id if cam2 else '', cam2.transform.translation.x if cam2 else '', cam2.transform.translation.y if cam2 else '', cam2.transform.translation.z if cam2 else '', cam2.transform.rotation.x if cam2 else '', cam2.transform.rotation.y if cam2 else '', cam2.transform.rotation.z if cam2 else '', cam2.transform.rotation.w if cam2 else '',
+    #                     cam3.fiducial_id if cam3 else '', cam3.transform.translation.x if cam3 else '', cam3.transform.translation.y if cam3 else '', cam3.transform.translation.z if cam3 else '', cam3.transform.rotation.x if cam3 else '', cam3.transform.rotation.y if cam3 else '', cam3.transform.rotation.z if cam3 else '', cam3.transform.rotation.w if cam3 else '']
+    #                 writer.writerow(row)
+    #     print(f'Data saved to {self.file_name}')
+        
     def create_middle_second_bottom_frame(self)-> None:
         ''' Creates the bottom frame in the middle second frame '''
         self.middle_second_bottom_frame = ctk.CTkFrame(self.middle_second_frame)
@@ -747,18 +870,12 @@ class NodeGUI(ctk.CTk):
         # ✅ Define the button before placing it
         self.middle_second_bottom_frame_button = ctk.CTkButton(
             self.middle_second_bottom_frame, 
-            text='PLOT 3 Axis (ROS Time)', 
-            command=lambda: self.plot_data(overlap=True, time_source="ros")
+            text='PLOT3', 
+            command=lambda: self.plot_data()
         )
 
         self.middle_second_bottom_frame_button.place(relx=0.5, rely=0.5, anchor='n')  # ✅ Now this won't cause an error
 
-        self.middle_second_bottom_frame_button_system = ctk.CTkButton(
-            self.middle_second_bottom_frame, 
-            text='PLOT 3 Axis (System Time)', 
-            command=lambda: self.plot_data(overlap=True, time_source="system")
-        )
-        self.middle_second_bottom_frame_button_system.place(relx=0.7, rely=0.5, anchor='n')
 
 
         self.middle_second_bottom_frame_button.place(relx=0.5, rely=0.5, anchor='n')
@@ -822,7 +939,7 @@ class NodeGUI(ctk.CTk):
         
 
 
-    def plot_data(self, overlap: bool, time_source: str = "ros"): 
+    def plot_data(self): 
         """
         Plots displacement data for the experiment.
 
@@ -832,23 +949,24 @@ class NodeGUI(ctk.CTk):
         print('Experiment name:', self.experiment_name)
         print('File name:', self.file_name)
         print('Experiment duration:', self.experiment_dur)
-        print(f'Using {time_source} time for plotting.')
+        
 
         # Load data
         data = pd.read_csv(self.file_name)
+        time_col = "Time (s)"
 
-        # Select time source
-        if time_source == "ros":
-            time_col = "ROS Header Time (s)"
-        elif time_source == "system":
-            time_col = f'Cam{self.cam_first} System Time (s)'
-        else:
-            print("Invalid time source. Choose 'ros' or 'system'.")
-            return
+        # # Select time source
+        # if time_source == "ros":
+        #     time_col = "ROS Header Time (s)"
+        # elif time_source == "system":
+        #     time_col = f'Cam{self.cam_first} System Time (s)'
+        # else:
+        #     print("Invalid time source. Choose 'ros' or 'system'.")
+        #     return
         
-        if time_col not in data.columns:
-            print(f"Time column {time_col} not found in the data.")
-            return
+        # if time_col not in data.columns:
+        #     print(f"Time column {time_col} not found in the data.")
+        #     return
         
         # Normalize time to start from zero
         start_time = data[time_col].iloc[0]
@@ -898,7 +1016,7 @@ class NodeGUI(ctk.CTk):
 
 
             axs[i].set_title(f'{axis} Axis Displacement - {self.experiment_name}')
-            axs[i].set_xlabel(f'Time ({time_source} Time, s)')
+            axs[i].set_xlabel(f'Time (s)')
             axs[i].set_ylabel('Displacement (mm)')
             axs[i].legend()
             axs[i].grid(True, which='both')
@@ -912,7 +1030,7 @@ class NodeGUI(ctk.CTk):
         plt.subplots_adjust(hspace=0.5)  # Increase spacing between subplots
 
         # Save the plot
-        file_name = self.file_name.replace('.csv', f'_{time_source}_time.png')
+        file_name = self.file_name.replace('.csv', '_time.png')
         plt.savefig(file_name)
         print(f'Plot saved to {file_name}')
         plt.show()
