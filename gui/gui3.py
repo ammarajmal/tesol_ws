@@ -871,7 +871,7 @@ class NodeGUI(ctk.CTk):
         self.middle_second_bottom_frame_button = ctk.CTkButton(
             self.middle_second_bottom_frame, 
             text='PLOT3', 
-            command=lambda: self.plot_data()
+            command=lambda: self.plot_data("ros"), 
         )
 
         self.middle_second_bottom_frame_button.place(relx=0.5, rely=0.5, anchor='n')  # ✅ Now this won't cause an error
@@ -879,7 +879,7 @@ class NodeGUI(ctk.CTk):
 
 
         self.middle_second_bottom_frame_button.place(relx=0.5, rely=0.5, anchor='n')
-        self.middle_second_bottom_frame_button_ind_axis = ctk.CTkButton(self.middle_second_bottom_frame, text='PLOT y-axis', command=lambda:self.plot_ind_axis('Y'))
+        self.middle_second_bottom_frame_button_ind_axis = ctk.CTkButton(self.middle_second_bottom_frame, text='PLOT3 System', command=lambda:self.plot_data('system'))
         self.middle_second_bottom_frame_button_ind_axis.place(relx=0.5, rely=0.8, anchor='n')
 
     def plot_ind_axis(self, axis='Y'):
@@ -939,7 +939,7 @@ class NodeGUI(ctk.CTk):
         
 
 
-    def plot_data(self): 
+    def plot_data(self, time_source="ros"): 
         """
         Plots displacement data for the experiment.
 
@@ -955,18 +955,18 @@ class NodeGUI(ctk.CTk):
         data = pd.read_csv(self.file_name)
         time_col = "Time (s)"
 
-        # # Select time source
-        # if time_source == "ros":
-        #     time_col = "ROS Header Time (s)"
-        # elif time_source == "system":
-        #     time_col = f'Cam{self.cam_first} System Time (s)'
-        # else:
-        #     print("Invalid time source. Choose 'ros' or 'system'.")
-        #     return
+        # Select time source
+        if time_source == "ros":
+            time_col = "ROS Header Time (s)"
+        elif time_source == "system":
+            time_col = f'Cam{self.cam_first} System Time (s)'
+        else:
+            print("Invalid time source. Choose 'ros' or 'system'.")
+            return
         
-        # if time_col not in data.columns:
-        #     print(f"Time column {time_col} not found in the data.")
-        #     return
+        if time_col not in data.columns:
+            print(f"Time column {time_col} not found in the data.")
+            return
         
         # Normalize time to start from zero
         start_time = data[time_col].iloc[0]
