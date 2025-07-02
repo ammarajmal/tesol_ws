@@ -63,10 +63,10 @@ class NodeGUI(ctk.CTk):
         self.exp_dur_var = tk.StringVar(self, self.experiment_dur)
         self.middle_second_center_dir_var = tk.StringVar(self, self.dir_name)
     
-        self.image_width = '640'
-        self.image_height = '480'
-        # self.image_height = '1080'
-        # self.image_width = '1920'
+        # self.image_width = '640'
+        # self.image_height = '480'
+        self.image_height = '1080'
+        self.image_width = '1920'
         
         # self.image_width = '1280'
         # self.image_height = '720'
@@ -75,7 +75,7 @@ class NodeGUI(ctk.CTk):
         # self.image_height = '480'
         
         self.camera_resolution = self.image_width + 'x' + self.image_height
-        self.camera_fps = '60'
+        self.camera_fps = '45'
 
         self.update_interval = 1000 # ms
         self.detection_rate_timeout = 5 # timeout for detection rate calculation
@@ -1090,6 +1090,7 @@ class NodeGUI(ctk.CTk):
         cam_launch_args = [
             f'{self.cam_launch_file}',
             f'launch_nuc:=sony_cam{cam_num}',
+            f'camera_fps:={self.camera_fps}',
             f'image_width:={self.image_width}',
             f'image_height:={self.image_height}']
         cam_roslaunch_file = [(

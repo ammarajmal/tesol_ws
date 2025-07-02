@@ -1,2 +1,1 @@
 fiducials/fiducials
-/home/sitl3/tesol_ws/devel/.private/fiducials/cmake.lock /home/sitl3/tesol_ws/devel/./cmake.lock
