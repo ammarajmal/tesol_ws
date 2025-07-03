@@ -24,3 +24,6 @@
 [submodule "src/charuco_detector"]
 	path = src/charuco_detector
 	url = https://github.com/ammarajmal/charuco_detector
+[submodule "src/charuco_creator"]
+	path = src/charuco_creator
+	url = https://github.com/ammarajmal/charuco_creator
