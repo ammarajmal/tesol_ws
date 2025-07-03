@@ -58,10 +58,12 @@ class NodeGUI(ctk.CTk):
         self.experiment_name = 'TS1'
         self.file_name = 'Cam'
         self.experiment_dur = 10 # seconds
-        self.dir_name = '21Feb'
+        self.dir_name = 'Jul04'
         self.exp_name_var = tk.StringVar(self, self.experiment_name)
         self.exp_dur_var = tk.StringVar(self, self.experiment_dur)
         self.middle_second_center_dir_var = tk.StringVar(self, self.dir_name)
+    
+        self.visualize_marker = False
     
         # self.image_width = '640'
         # self.image_height = '480'
@@ -75,7 +77,7 @@ class NodeGUI(ctk.CTk):
         # self.image_height = '480'
         
         self.camera_resolution = self.image_width + 'x' + self.image_height
-        self.camera_fps = '45'
+        self.camera_fps = '30'
 
         self.update_interval = 1000 # ms
         self.detection_rate_timeout = 5 # timeout for detection rate calculation
@@ -92,7 +94,7 @@ class NodeGUI(ctk.CTk):
         self.sq_size_var = tk.StringVar(self, self.square_size)
         self.board_size_var = tk.StringVar(self, self.board_size)
 
-        self.tag_size = '0.035' # Dimension in meters for AprilTag
+        self.tag_size = '0.16' # Dimension in meters for AprilTag
         self.tag_family = "tag36h11" #  AprilTag family
         self.tag_size_var = tk.StringVar(self, self.tag_size)
         self.tag_family_var = tk.StringVar(self, self.tag_family)
@@ -1015,7 +1017,8 @@ class NodeGUI(ctk.CTk):
             f'{self.detect_launch_file}',
             f'launch_nuc:=sony_cam{cam_num}',
             f'tag_family:={self.tag_family}',
-            f'tag_size:={self.tag_size}']
+            f'tag_size:={self.tag_size}',
+            f'visualize:={self.visualize_marker}']
         detect_roslaunch_file = [(
             roslaunch.rlutil.resolve_launch_arguments(detect_launch_args)[0],
             detect_launch_args[1:])]
