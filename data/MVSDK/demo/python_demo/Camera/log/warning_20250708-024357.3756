@@ -1,0 +1,18 @@
+Log file created at: 2025/07/08 02:43:57
+Running on machine: omen
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+W0708 02:43:57.745415  3782 CameraGigeBase.cpp:3914] Device:(name:MS-GE40GC-T-CL sn:052120120267 cam:172.31.1.57-1000-8000 nic:eno1-172.31.1.94-Unknown-1500)Heart Fail:1
+W0708 02:43:59.940979  3782 CameraGigeBase.cpp:3863] Device:(name:MS-GE40GC-T-CL sn:052120120267 cam:172.31.1.57-1000-8000 nic:eno1-172.31.1.94-1000M-1500)ReConnected, TolCount:1, Flag:1
+W0708 02:44:14.326152  3782 CameraGigeBase.cpp:3914] Device:(name:MS-GE40GC-T-CL sn:052120120267 cam:172.31.1.57-1000-8000 nic:eno1-172.31.1.94-Unknown-1500)Heart Fail:1
+W0708 02:44:16.654850  3782 CameraGigeBase.cpp:3914] Device:(name:MS-GE40GC-T-CL sn:052120120267 cam:172.31.1.57-1000-8000 nic:eno1-172.31.1.94-Unknown-1500)Heart Fail:2
+W0708 02:44:18.561312  3782 CameraGigeBase.cpp:3914] Device:(name:MS-GE40GC-T-CL sn:052120120267 cam:172.31.1.57-1000-8000 nic:-172.31.1.94-Unknown-0)Heart Fail:3
+W0708 02:44:18.573915  3782 CameraGigeBase.cpp:3914] Device:(name:MS-GE40GC-T-CL sn:052120120267 cam:172.31.1.57-1000-8000 nic:-172.31.1.94-Unknown-0)Heart Fail:4
+W0708 02:44:19.573714  3782 CameraGigeBase.cpp:3914] Device:(name:MS-GE40GC-T-CL sn:052120120267 cam:172.31.1.57-1000-8000 nic:-172.31.1.94-Unknown-0)Heart Fail:5
+W0708 02:44:20.576939  3782 CameraGigeBase.cpp:3914] Device:(name:MS-GE40GC-T-CL sn:052120120267 cam:172.31.1.57-1000-8000 nic:-172.31.1.94-Unknown-0)Heart Fail:6
+W0708 02:44:21.584206  3782 CameraGigeBase.cpp:3914] Device:(name:MS-GE40GC-T-CL sn:052120120267 cam:172.31.1.57-1000-8000 nic:-172.31.1.94-Unknown-0)Heart Fail:7
+W0708 02:44:22.584460  3782 CameraGigeBase.cpp:3914] Device:(name:MS-GE40GC-T-CL sn:052120120267 cam:172.31.1.57-1000-8000 nic:-172.31.1.94-Unknown-0)Heart Fail:8
+W0708 02:44:23.586228  3782 CameraGigeBase.cpp:3914] Device:(name:MS-GE40GC-T-CL sn:052120120267 cam:172.31.1.57-1000-8000 nic:-172.31.1.94-Unknown-0)Heart Fail:9
+W0708 02:44:24.586959  3782 CameraGigeBase.cpp:3914] Device:(name:MS-GE40GC-T-CL sn:052120120267 cam:172.31.1.57-1000-8000 nic:-172.31.1.94-Unknown-0)Heart Fail:10
+W0708 02:44:25.589725  3782 CameraGigeBase.cpp:3914] Device:(name:MS-GE40GC-T-CL sn:052120120267 cam:172.31.1.57-1000-8000 nic:-172.31.1.94-Unknown-0)Heart Fail:11
+W0708 02:44:26.592003  3782 CameraGigeBase.cpp:3914] Device:(name:MS-GE40GC-T-CL sn:052120120267 cam:172.31.1.57-1000-8000 nic:-172.31.1.94-Unknown-0)Heart Fail:12
+W0708 02:44:26.594422  3782 CameraGigeBase.cpp:3919] Device:(name:MS-GE40GC-T-CL sn:052120120267 cam:172.31.1.57-1000-8000 nic:-172.31.1.94-Unknown-0)CommIsFailed!!!
