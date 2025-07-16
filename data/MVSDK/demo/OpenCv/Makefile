@@ -1,6 +1,6 @@
 CXX ?= g++
-CFLAGS =`pkg-config --cflags opencv`
-LIBS = `pkg-config --libs opencv`
+CFLAGS =`pkg-config --cflags opencv4`
+LIBS = `pkg-config --libs opencv4`
 INCLUDE= -I../../include
 
 all: main
