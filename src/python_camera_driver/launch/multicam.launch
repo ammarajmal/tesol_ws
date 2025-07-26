@@ -1,0 +1,78 @@
+<launch>
+    <!-- This file launches a separate node for each camera, achieving true parallel processing. -->
+
+    <!-- Load the camera serial number map once for all nodes -->
+    <rosparam command="load" file="$(find python_camera_driver)/config/cameras.yaml"/>
+
+    <!-- ======================= CAMERA 1 ======================= -->
+    <group ns="cam1">
+        <node pkg="python_camera_driver" type="simple_camera_node.py" name="camera_node" output="screen">
+            <param name="camera_id" value="CAM1"/>
+        </node>
+        <!-- AprilTag Detector for CAM1 -->
+        <node pkg="apriltag_ros" type="apriltag_ros_continuous_node" name="apriltag_detector" output="screen">
+            <remap from="image_rect" to="image_raw" />
+            <remap from="camera_info" to="camera_info" /> <!-- You'll need to add a CameraInfo publisher to your node -->
+            <param name="publish_tag_detections_pose" type="bool" value="true" />
+            <param name="publish_tf" type="bool" value="false" />
+        </node>
+    </group>
+
+    <!-- ======================= CAMERA 2 ======================= -->
+    <group ns="cam2">
+        <node pkg="python_camera_driver" type="simple_camera_node.py" name="camera_node" output="screen">
+            <param name="camera_id" value="CAM2"/>
+        </node>
+        <!-- AprilTag Detector for CAM2 -->
+        <node pkg="apriltag_ros" type="apriltag_ros_continuous_node" name="apriltag_detector" output="screen">
+            <remap from="image_rect" to="image_raw" />
+            <remap from="camera_info" to="camera_info" />
+            <param name="publish_tag_detections_pose" type="bool" value="true" />
+            <param name="publish_tf" type="bool" value="false" />
+        </node>
+    </group>
+
+
+    <!-- ======================= CAMERA 3 ======================= -->
+    <group ns="cam3">
+        <node pkg="python_camera_driver" type="simple_camera_node.py" name="camera_node" output="screen">
+            <param name="camera_id" value="CAM3"/>
+        </node>
+        <!-- AprilTag Detector for CAM3 -->
+        <node pkg="apriltag_ros" type="apriltag_ros_continuous_node" name="apriltag_detector" output="screen">
+            <remap from="image_rect" to="image_raw" />
+            <remap from="camera_info" to="camera_info" />
+            <param name="publish_tag_detections_pose" type="bool" value="true" />
+            <param name="publish_tf" type="bool" value="false" />
+        </node>
+    </group>
+    <!-- ======================= CAMERA 4 ======================= -->
+    <group ns="cam4">
+        <node pkg="python_camera_driver" type="simple_camera_node.py" name="camera_node" output="screen">
+            <param name="camera_id" value="CAM4"/>
+        </node>
+        <!-- AprilTag Detector for CAM4 -->
+        <node pkg="apriltag_ros" type="apriltag_ros_continuous_node" name="apriltag_detector" output="screen">
+            <remap from="image_rect" to="image_raw" />
+            <remap from="camera_info" to="camera_info" />
+            <param name="publish_tag_detections_pose" type="bool" value="true" />
+            <param name="publish_tf" type="bool" value="false" />
+        </node>
+    </group>
+    <!-- ======================= CAMERA 5 ======================= -->
+    <group ns="cam5">
+        <node pkg="python_camera_driver" type="simple_camera_node.py" name="camera_node" output="screen">
+            <param name="camera_id" value="CAM5"/>
+        </node>
+        <!-- AprilTag Detector for CAM5 -->
+        <node pkg="apriltag_ros" type="apriltag_ros_continuous_node" name="apriltag_detector" output="screen">
+            <remap from="image_rect" to="image_raw" />
+            <remap from="camera_info" to="camera_info" />
+            <param name="publish_tag_detections_pose" type="bool" value="true" />
+            <param name="publish_tf" type="bool" value="false" />
+        </node>
+    </group>
+    
+            
+                    
+</launch>

@@ -1,0 +1,13 @@
+<launch>
+    <arg name="cam_id" default="CAM3"/>
+
+    <node pkg="python_camera_driver" type="simple_camera_node.py" name="simple_camera_node" output="screen">
+        <param name="camera_id" value="$(arg cam_id)"/>
+        <param name="frame_rate" value="30"/>
+        <param name="resolution" value="640x480"/>
+        <param name="image_topic" value="${cam_id}/image_raw"/>
+        
+        
+        <rosparam command="load" file="$(find python_camera_driver)/config/cameras.yaml"/>
+    </node>
+</launch>
