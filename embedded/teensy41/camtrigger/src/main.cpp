@@ -1,84 +1,89 @@
 /******************************************************************************
- * Project      : Camera Hardware Trigger Generator
+ * Project      : Camera Hardware Trigger Generator with LED Feedback
  * File         : main.cpp
- * Description  : Generates precise hardware trigger pulses on a digital pin,
- *                suitable for synchronizing GigE cameras at up to 150 FPS.
- *                Supports on-demand trigger via USB serial command.
- *
+ * Description  : Teensy 4.1 – Periodic trigger, pushbutton & serial/manual trigger,
+ *                with clear LED indication and serial prints for manual triggers.
  * Author       : Ammar Ajmal
  * Email        : ammarajml@gmail.com
- * Created      : 2025-07-27
- * Version      : 1.0
- * License      : (Add license info here, e.g. MIT, GPL)
+ * Version      : 1.3  (2025-07-27)
  * Board        : Teensy 4.1
  ******************************************************************************/
 
+
 #include <Arduino.h>
 
-// ====== Configuration Parameters ======
+const int triggerPin = 2;   // Output trigger pin (to camera)
+const int ledPin = 13;      // Teensy onboard LED
+const int buttonPin = 3;    // Pushbutton between pin 3 and GND
 
-// Output pin used for trigger signal (digital pin 2)
-const int triggerPin = 2;
+const unsigned long trigger_interval_us = 6666; // 150Hz -> interval
+const unsigned long pulse_width_us = 10;        // 10us trigger pulse
+const unsigned long debounce_ms = 50;           // Button debounce interval
 
-// Desired trigger interval in microseconds
-// For 150 FPS, interval = 1,000,000 µs / 150 ≈ 6666 µs
-const unsigned long trigger_interval_us = 6666;
+// State-tracking for button debounce
+bool lastButtonPhysical = HIGH;
+unsigned long lastDebounceTime = 0;
 
-// Duration of the trigger pulse (high level) in microseconds
-const unsigned long pulse_width_us = 10;
+// Function to fire both trigger and LED for N ms, and print a message
+void fireTriggerWithLED(const char* src, unsigned long ledOn_ms) {
+    Serial.print("Trigger via ");
+    Serial.println(src);
+    digitalWrite(triggerPin, HIGH);
+    digitalWrite(ledPin, HIGH);
+    delayMicroseconds(pulse_width_us);
+    digitalWrite(triggerPin, LOW);
+    delay(ledOn_ms);
+    digitalWrite(ledPin, LOW);
+}
 
-// ====== Setup function: runs once ======
 void setup() {
-  // Initialize trigger pin as an output and set LOW initially
-  pinMode(triggerPin, OUTPUT);
-  digitalWrite(triggerPin, LOW);
+    pinMode(triggerPin, OUTPUT);
+    digitalWrite(triggerPin, LOW);
+    pinMode(ledPin, OUTPUT);
+    digitalWrite(ledPin, LOW);
+    pinMode(buttonPin, INPUT_PULLUP);
 
-  // Start serial communication for interactive commands and debugging
-  Serial.begin(115200);
-
-  // Wait until the serial port is open (mandatory for native USB on Teensy)
-  while (!Serial) {
-    // Can add timeout or additional checks here if needed
-  }
-
-  Serial.println("Camera Trigger Generator Initialized.");
-  Serial.print("Trigger interval (us): ");
-  Serial.println(trigger_interval_us);
-  Serial.print("Pulse width (us): ");
-  Serial.println(pulse_width_us);
-  Serial.println("Send 't' to trigger manually.");
+    Serial.begin(115200);
+    while (!Serial);
+    Serial.println("Teensy Camera Trigger & Button/LED Feedback (v1.3)");
+    Serial.println("Periodic (150Hz), pushbutton or serial ('t') triggers LED and output pulse.");
 }
 
-// ====== Main loop: runs repeatedly ======
 void loop() {
-  // Check if a command is received via USB serial
-  if (Serial.available()) {
-    char cmd = Serial.read();
+    // --- Button debounce and event detection ---
+    bool buttonPhysical = digitalRead(buttonPin); // LOW = pressed, HIGH = not pressed
 
-    // Support only 't' or 'T' as valid trigger commands
-    if (cmd == 't' || cmd == 'T') {
-      Serial.println("Manual trigger command received.");
-
-      // Generate a single trigger pulse
-      digitalWrite(triggerPin, HIGH);
-      delayMicroseconds(pulse_width_us);
-      digitalWrite(triggerPin, LOW);
-
-      Serial.println("Manual trigger pulse sent.");
-    } else {
-      // Unknown command received; optionally print or ignore
-      Serial.print("Unknown command: ");
-      Serial.println(cmd);
+    // Debounce logic: only react to new presses
+    if (buttonPhysical != lastButtonPhysical) {
+        lastDebounceTime = millis();
     }
-  }
 
-  // Generate automatic periodic trigger pulse:
-  // HIGH for pulse_width_us, then LOW for (interval - pulse width)
-  digitalWrite(triggerPin, HIGH);                       // Start pulse
-  delayMicroseconds(pulse_width_us);                    // Pulse duration
-  digitalWrite(triggerPin, LOW);                        // End pulse
-  delayMicroseconds(trigger_interval_us - pulse_width_us); // Wait for remainder of interval
+    if (lastButtonPhysical == HIGH && buttonPhysical == LOW) { // just pressed!
+        if ((millis() - lastDebounceTime) > debounce_ms) {
+            // Fire trigger and LED for 1 second, print message
+            fireTriggerWithLED("push button", 1000); // 1s LED ON
+            delay(200); // Simple long-press guard
+        }
+    }
+    lastButtonPhysical = buttonPhysical;
 
-  // Repeat indefinitely, maintaining precise interval timing
+    // --- Serial trigger ('t' or 'T') fires LED and output ---
+    if (Serial.available()) {
+        char cmd = Serial.read();
+        if (cmd == 't' || cmd == 'T') {
+            fireTriggerWithLED("serial", 1000);
+        } else {
+            Serial.print("Unknown command: "); Serial.println(cmd);
+        }
+    }
+
+    // --- Periodic (automatic) trigger -- no LED feedback, just output ---
+    static unsigned long nextTrigger = 0;
+    unsigned long now = micros();
+    if (now >= nextTrigger) {
+        digitalWrite(triggerPin, HIGH);
+        delayMicroseconds(pulse_width_us);
+        digitalWrite(triggerPin, LOW);
+        nextTrigger = now + trigger_interval_us;
+    }
 }
-
