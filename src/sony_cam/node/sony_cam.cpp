@@ -107,9 +107,11 @@ public:
         static ros::Time last_time = ros::Time::now();
         cv::Mat frame;
         if (cap_.read(frame)) { // Capture a frame
+            ros::Time current_time = ros::Time::now();
             try {
+                
                 cv::resize(frame, frame, cv::Size(image_width_, image_height_), 0, 0, cv::INTER_LINEAR);
-                ros::Time current_time = ros::Time::now();
+                
                 double frame_time_diff = (current_time - last_time).toSec();
                 last_time = current_time;
 
