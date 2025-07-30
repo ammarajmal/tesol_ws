@@ -27,7 +27,7 @@ themes = {'blue': ("#3B8ED0", "#1F6AA5", "#1f82d1"),
           'red': ("#fa5f5a", "#ba3732")
           }
 # select value of COLOR_SELECT from (0: blue, 1: green, 2: dark-blue)
-COLOR_SELECT = list(themes.keys())[1]
+COLOR_SELECT = list(themes.keys())[0]
 # Modes: "System" (standard), "Dark", "Light"
 ctk.set_appearance_mode("System")
 # Themes: "blue" (standard), "green", "dark-blue"
@@ -56,9 +56,9 @@ class NodeGUI(ctk.CTk):
         self.detect3_status = False
 
         self.experiment_name = 'DC0'
-        self.file_name = 'Cam``'
+        self.file_name = 'Cam2'
         self.experiment_dur = 10 # seconds
-        self.dir_name = '30Jul'
+        self.dir_name = '26NOV'
         self.exp_name_var = tk.StringVar(self, self.experiment_name)
         self.exp_dur_var = tk.StringVar(self, self.experiment_dur)
         self.middle_second_center_dir_var = tk.StringVar(self, self.dir_name)
@@ -88,11 +88,11 @@ class NodeGUI(ctk.CTk):
 
 
         self.board_size = '6x5' # default board size for calibration
-        self.square_size = '0.025' # default square size for calibration in meters = 6.4mm
+        self.square_size = '0.0025' # default square size for calibration in meters = 6.4mm
         self.sq_size_var = tk.StringVar(self, self.square_size)
         self.board_size_var = tk.StringVar(self, self.board_size)
 
-        self.tag_size = '0.025' # Dimension in meters for AprilTag
+        self.tag_size = '0.035' # Dimension in meters for AprilTag
         self.tag_family = "tag36h11" #  AprilTag family
         self.tag_size_var = tk.StringVar(self, self.tag_size)
         self.tag_family_var = tk.StringVar(self, self.tag_family)
