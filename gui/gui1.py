@@ -87,8 +87,8 @@ class NodeGUI(ctk.CTk):
         self.collectected_data_displacement = []
 
 
-        self.board_size = '6x9' # default board size for calibration
-        self.square_size = '0.0064' # default square size for calibration in meters = 6.4mm
+        self.board_size = '6x5' # default board size for calibration
+        self.square_size = '0.0025' # default square size for calibration in meters = 6.4mm
         self.sq_size_var = tk.StringVar(self, self.square_size)
         self.board_size_var = tk.StringVar(self, self.board_size)
 

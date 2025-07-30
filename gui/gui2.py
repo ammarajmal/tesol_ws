@@ -77,7 +77,7 @@ class NodeGUI(ctk.CTk):
         # self.image_height = '480'
         
         self.camera_resolution = self.image_width + 'x' + self.image_height
-        self.camera_fps = '20'
+        self.camera_fps = '60'
 
         self.update_interval = 1000 # ms
         self.detection_rate_timeout = 5 # timeout for detection rate calculation
@@ -89,12 +89,12 @@ class NodeGUI(ctk.CTk):
         self.collectected_data_displacement = []
 
 
-        self.board_size = '6x9' # default board size for calibration
-        self.square_size = '0.0064' # default square size for calibration in meters = 6.4mm
+        self.board_size = '6x5' # default board size for calibration
+        self.square_size = '0.025' # default square size for calibration in meters = 6.4mm
         self.sq_size_var = tk.StringVar(self, self.square_size)
         self.board_size_var = tk.StringVar(self, self.board_size)
 
-        self.tag_size = '0.16' # Dimension in meters for AprilTag
+        self.tag_size = '0.025' # Dimension in meters for AprilTag
         self.tag_family = "tag36h11" #  AprilTag family
         self.tag_size_var = tk.StringVar(self, self.tag_size)
         self.tag_family_var = tk.StringVar(self, self.tag_family)
