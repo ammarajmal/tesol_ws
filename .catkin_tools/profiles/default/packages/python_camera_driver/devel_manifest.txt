@@ -1,4 +1,4 @@
 python_camera_driver
-/home/ammar/tesol_ws/devel/.private/python_camera_driver/share/python_camera_driver/cmake/python_camera_driverConfig.cmake /home/ammar/tesol_ws/devel/share/python_camera_driver/cmake/python_camera_driverConfig.cmake
-/home/ammar/tesol_ws/devel/.private/python_camera_driver/share/python_camera_driver/cmake/python_camera_driverConfig-version.cmake /home/ammar/tesol_ws/devel/share/python_camera_driver/cmake/python_camera_driverConfig-version.cmake
-/home/ammar/tesol_ws/devel/.private/python_camera_driver/lib/pkgconfig/python_camera_driver.pc /home/ammar/tesol_ws/devel/lib/pkgconfig/python_camera_driver.pc
+/home/nuc1/tesol_ws/devel/.private/python_camera_driver/lib/pkgconfig/python_camera_driver.pc /home/nuc1/tesol_ws/devel/lib/pkgconfig/python_camera_driver.pc
+/home/nuc1/tesol_ws/devel/.private/python_camera_driver/share/python_camera_driver/cmake/python_camera_driverConfig-version.cmake /home/nuc1/tesol_ws/devel/share/python_camera_driver/cmake/python_camera_driverConfig-version.cmake
+/home/nuc1/tesol_ws/devel/.private/python_camera_driver/share/python_camera_driver/cmake/python_camera_driverConfig.cmake /home/nuc1/tesol_ws/devel/share/python_camera_driver/cmake/python_camera_driverConfig.cmake
