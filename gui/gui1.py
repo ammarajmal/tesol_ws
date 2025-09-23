@@ -65,11 +65,11 @@ class NodeGUI(ctk.CTk):
     
         # self.image_width = '640'
         # self.image_height = '480'
-        # self.image_height = '1080'
-        # self.image_width = '1920'
+        self.image_height = '1080'
+        self.image_width = '1920'
         
-        self.image_width = '1280'
-        self.image_height = '720'
+        # self.image_width = '1280'
+        # self.image_height = '720'
         
         # self.image_width = '854'
         # self.image_height = '480'

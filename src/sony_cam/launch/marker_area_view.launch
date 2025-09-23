@@ -1,0 +1,6 @@
+<launch>
+    <arg name="camera_name" default="sony_cam2" />
+    <node pkg="image_view" type="image_view" name="$(arg camera_name)_apriltag_view" output="screen">
+        <remap from="image" to="/$(arg camera_name)/image_raw_apriltag" />
+    </node>
+</launch>

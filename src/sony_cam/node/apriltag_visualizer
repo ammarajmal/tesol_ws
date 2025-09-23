@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+"""
+ROS node to detect Apriltag 36h11, visualize detection overlays,
+and publish annotated images for display.
+"""
+
+import rospy
+import sys
+import numpy as np
+import cv2
+import apriltag
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge, CvBridgeError
+
+
+class AprilTagVisualizer:
+    def __init__(self, camera_topic):
+        self.bridge = CvBridge()
+        self.detector = apriltag.Detector(apriltag.DetectorOptions(families='tag36h11'))
+        rospy.init_node('apriltag_visualizer', anonymous=True)
+        self.pub = rospy.Publisher(camera_topic + "_apriltag", Image, queue_size=1)
+        rospy.Subscriber(camera_topic, Image, self.callback, queue_size=1)
+        rospy.loginfo(f"Subscribed and publishing annotated images on {camera_topic}_apriltag")
+
+    def callback(self, data):
+        try:
+            # Convert to OpenCV grayscale and color image for visualization
+            gray = self.bridge.imgmsg_to_cv2(data, desired_encoding='mono8')
+            color_img = self.bridge.imgmsg_to_cv2(data, desired_encoding='bgr8')
+        except CvBridgeError as e:
+            rospy.logerr(str(e))
+            return
+
+        height, width = gray.shape
+        total_pixels = height * width
+
+        detections = self.detector.detect(gray)
+
+        if not detections:
+            rospy.loginfo("No Apriltag detected in current frame.")
+            try:
+                annotated_img_msg = self.bridge.cv2_to_imgmsg(color_img, encoding='bgr8')
+                self.pub.publish(annotated_img_msg)
+            except CvBridgeError as e:
+                rospy.logerr(str(e))
+            return
+
+        for det in detections:
+            corners = np.array(det.corners, dtype=np.int32)
+
+            # Draw polygon edges (corners) in green and fill with translucent shade
+            overlay = color_img.copy()
+            cv2.fillPoly(overlay, [corners], color=(0, 255, 0))
+            alpha = 0.4  # transparency factor
+            cv2.addWeighted(overlay, alpha, color_img, 1 - alpha, 0, color_img)
+
+            # Draw polygon lines
+            cv2.polylines(color_img, [corners], isClosed=True, color=(0, 255, 0), thickness=2)
+
+            # Calculate pixel coverage
+            mask = np.zeros_like(gray, dtype=np.uint8)
+            cv2.fillPoly(mask, [corners], 255)
+            apriltag_pixels = cv2.countNonZero(mask)
+            coverage_percent = (apriltag_pixels / total_pixels) * 100
+
+            # Put coverage text on image
+            cv2.putText(color_img,
+                        f"Coverage: {coverage_percent:.2f}%",
+                        (corners[0][0], corners[0][1] - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.7, (0, 255, 0), 2)
+
+            # You can break here if only the first detection needed
+            break
+
+        try:
+            annotated_img_msg = self.bridge.cv2_to_imgmsg(color_img, encoding='bgr8')
+            self.pub.publish(annotated_img_msg)
+        except CvBridgeError as e:
+            rospy.logerr(str(e))
+
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: rosrun <package_name> apriltag_visualizer.py /camera_topic_name")
+        sys.exit(1)
+
+    camera_topic = sys.argv[1]
+    viz = AprilTagVisualizer(camera_topic)
+    rospy.spin()
+
+
+if __name__ == '__main__':
+    main()

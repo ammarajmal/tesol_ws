@@ -1,0 +1,4 @@
+offline_apriltag
+/home/ammar/tesol_ws/devel/.private/offline_apriltag/lib/pkgconfig/offline_apriltag.pc /home/ammar/tesol_ws/devel/lib/pkgconfig/offline_apriltag.pc
+/home/ammar/tesol_ws/devel/.private/offline_apriltag/share/offline_apriltag/cmake/offline_apriltagConfig.cmake /home/ammar/tesol_ws/devel/share/offline_apriltag/cmake/offline_apriltagConfig.cmake
+/home/ammar/tesol_ws/devel/.private/offline_apriltag/share/offline_apriltag/cmake/offline_apriltagConfig-version.cmake /home/ammar/tesol_ws/devel/share/offline_apriltag/cmake/offline_apriltagConfig-version.cmake
