@@ -55,10 +55,10 @@ class NodeGUI(ctk.CTk):
         self.detect2_status = False
         self.detect3_status = False
 
-        self.experiment_name = 'DC0'
-        self.file_name = 'Cam2'
+        self.experiment_name = 'TS0'
+        self.file_name = 'Cam1'
         self.experiment_dur = 10 # seconds
-        self.dir_name = '26NOV'
+        self.dir_name = '24SEP'
         self.exp_name_var = tk.StringVar(self, self.experiment_name)
         self.exp_dur_var = tk.StringVar(self, self.experiment_dur)
         self.middle_second_center_dir_var = tk.StringVar(self, self.dir_name)
@@ -87,12 +87,12 @@ class NodeGUI(ctk.CTk):
         self.collectected_data_displacement = []
 
 
-        self.board_size = '6x5' # default board size for calibration
-        self.square_size = '0.0025' # default square size for calibration in meters = 6.4mm
+        self.board_size = '6x7' # default board size for calibration
+        self.square_size = '0.006' # default square size for calibration in meters = 6mm
         self.sq_size_var = tk.StringVar(self, self.square_size)
         self.board_size_var = tk.StringVar(self, self.board_size)
 
-        self.tag_size = '0.035' # Dimension in meters for AprilTag
+        self.tag_size = '0.02' # Dimension in meters for AprilTag (20mm)
         self.tag_family = "tag36h11" #  AprilTag family
         self.tag_size_var = tk.StringVar(self, self.tag_size)
         self.tag_family_var = tk.StringVar(self, self.tag_family)
